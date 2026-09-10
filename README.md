@@ -19,6 +19,10 @@ memory (frames) --> grounded symbolic subgoal --> action chunk
                     the only stage this repo learns; the policy is fixed
 ```
 
+<p align="center">
+  <img src="assets/system_overview.png" width="85%" alt="GAMMA system overview: each replan tick the SAM-3 detector grounds the window frames; the writer (Agent-1) distils them into at most one grounded event line; the reasoner (Agent-2) reads the append-only bank and emits the next grounded subgoal; every claim passes the propose-verify harness.">
+</p>
+
 ## Repository layout
 
 | directory | contents |
