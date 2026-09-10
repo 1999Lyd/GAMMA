@@ -27,16 +27,18 @@ memory (frames) --> grounded symbolic subgoal --> action chunk
 
 Success rate (%), mean over three serving seeds at 30 episodes per task, all with
 the same fixed subgoal-conditioned π0.5 executor. Baseline and oracle rows are
-the benchmark's reported numbers.
+the numbers reported by [RoboMME](https://github.com/RoboMME/robomme_policy_learning)
+([paper](https://arxiv.org/abs/2603.04639), [benchmark](https://github.com/RoboMME/robomme_benchmark),
+[models](https://huggingface.co/Yinpei/mme_vla_suite)); their checkpoints are on that model hub.
 
 | configuration | memory | Avg | checkpoint |
 |---|---|---:|---|
-| π0.5 end-to-end | none | 17.9 | benchmark |
-| FrameSamp+Modul (best memory-VLA) | latent frame memory | 44.5 | benchmark |
-| MemER-style keyframe pipeline | VLM keyframe selection | 42.4 | benchmark |
-| GroundSG+QwenVL (single VLM) | raw frames | 32.7 | benchmark |
+| π0.5 end-to-end | none | 17.9 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
+| FrameSamp+Modul (best memory-VLA) | latent frame memory | 44.5 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
+| MemER-style keyframe pipeline | VLM keyframe selection | 42.4 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
+| GroundSG+QwenVL (single VLM) | raw frames | 32.7 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
 | **GAMMA (ours)** | verified grounded text + harness | **66.0** | [GAMMA_checkpoints.zip](CHECKPOINTS.md) — Drive link **TBD** |
-| GroundSG+Oracle (privileged ceiling) | oracle subgoals | 84.1 | benchmark |
+| GroundSG+Oracle (privileged ceiling) | oracle subgoals | 84.1 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
 
 Harness ablation (one verdict disabled at a time): w/o DEFER 62.7, w/o REJECT 55.1,
 w/o CORRECT 65.0.
@@ -98,7 +100,7 @@ The RoboMemArena stack has its own environment; see
 
 ## Benchmark setup (RoboMME)
 
-1. Clone the RoboMME policy-learning repository and point `ROBOMME_ROOT` at it.
+1. Clone the [RoboMME policy-learning repository](https://github.com/RoboMME/robomme_policy_learning) and point `ROBOMME_ROOT` at it.
    Train (or obtain) the subgoal-conditioned π0.5 executor with their
    `GroundSG` recipe; the checkpoint we used is in the checkpoint archive
    (`policy/pi05_subgoal_conditioned_79999`) and is expected at
