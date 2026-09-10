@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.log
+work/
+data/
+outputs/
+env.sh
+*.mp4
+*.npz
+*.safetensors
+*.pt
+*.pth
+.DS_Store

@@ -1,0 +1,282 @@
+diff --git a/examples/robomme/eval.py b/examples/robomme/eval.py
+index 245f305..64fc16c 100644
+--- a/examples/robomme/eval.py
++++ b/examples/robomme/eval.py
+@@ -43,10 +43,22 @@ class Args:
+     model_seed: int = 42
+     model_ckpt_id: int = 80000
+ 
++    # ---- gate-C event-bank memory (mme_gateC arm) ----
++    # Builds the event/summary token bank ONLINE in the client process
++    # (pytorch GateCMemoryManager + frozen v40k tap; run the client from
++    # openpi_robocasa/.venv) and attaches event_bank/_mask/_type to every
++    # infer request. Off by default: baselines and other variants unaffected.
++    use_event_bank: bool = False
++    mem_device: str = "cuda"
++    mem_encoders: str = "/home/yl817/belief_vla_migration/robomme_setup/scratch/qformer_gateB/general_encoders.pt"
++    mem_tap_ckpt: str = "/home/yl817/belief_vla_migration/openpi_robocasa/checkpoints/pi05_robomme_full_vanilla/full_vanilla_std/40000"
++    event_bank_budget: int = 448  # must match the training-side fixed pad
++
+     # task control
+     re_eval_tasks: str = "" # tasks split by comma
+     only_tasks: str = "" # tasks split by comma
+     exclude_tasks: str = "" # tasks split by comma
++    max_episodes: int = 50  # cap episodes/task (early-signal sweeps use ~12)
+ 
+     # VLM subgoal predictor
+     use_oracle: bool = False
+@@ -65,9 +77,42 @@ class Args:
+ 
+ 
+ class EpisodeEvaluator:
+-    def __init__(self, args: Args, save_dir: Path):
++    def __init__(self, args: Args, save_dir: Path, mem_client=None):
+         self.args = args
+         self.save_dir = save_dir
++        # OnlineEventBankMemory when --use-event-bank, else None
++        self.mem_client = mem_client
++        # per-infer instrumentation records of the CURRENT episode
++        self._ep_records = []
++
++    def _save_episode_metrics(self, env_runner, video_save_dir, success_flag, task_goal):
++        """One npz per episode next to the video: per-infer alphas + memory
++        stats + outcome. This is the mismatch-diagnosis dataset (alpha-on-junk,
++        junk-count vs SR stratification)."""
++        if not self._ep_records:
++            return
++        recs = self._ep_records
++        out = {
++            "task": np.asarray(env_runner.env_id),
++            "episode_id": np.asarray(env_runner.episode_id),
++            "difficulty": np.asarray(str(env_runner.difficulty)),
++            "task_goal": np.asarray(task_goal),
++            "outcome": np.asarray(success_flag),
++            "infer_env_step": np.asarray([r["infer_env_step"] for r in recs]),
++        }
++        for k in ("mem_t", "mem_n_events", "mem_n_tokens", "mem_has_summary",
++                  "alpha_skip", "alpha_event", "alpha_summary"):
++            if any(k in r for r in recs):
++                out[k] = np.asarray([r.get(k, np.nan) for r in recs], dtype=np.float64)
++        if any("alpha_per_layer" in r for r in recs):
++            pl = [r["alpha_per_layer"] for r in recs if "alpha_per_layer" in r]
++            out["alpha_per_layer"] = np.stack(pl).astype(np.float32)  # [n_infer, depth, 3]
++        if any("event_times" in r for r in recs):
++            out["event_times"] = np.stack(
++                [r.get("event_times", np.full(6, -1, np.int64)) for r in recs])
++        fn = f"{env_runner.env_id}_ep{env_runner.episode_id}_{success_flag}_metrics.npz"
++        np.savez(str(Path(video_save_dir) / fn), **out)
++        print(f"[metrics] wrote {fn} ({len(recs)} infers)")
+ 
+     def eval_each_episode(
+         self,
+@@ -82,6 +127,10 @@ class EpisodeEvaluator:
+         while not resp.get("reset_finished", False):
+             time.sleep(0.1)
+ 
++        if self.mem_client is not None:
++            self.mem_client.reset()
++        self._ep_records = []
++
+         epstate = EpisodeState()
+         task_goal, recorder = self.init_episode(env_runner, epstate, video_save_dir)
+         subgoal_predictor.start_episode(epstate, env_runner)        
+@@ -123,6 +172,9 @@ class EpisodeEvaluator:
+             obs, stop_flag, success_flag = env_runner.step(action)
+             epstate.count += 1
+ 
++            if self.mem_client is not None:
++                self.mem_client.record_action(action)
++
+             if epstate.count > self.args.max_steps:
+                 success_flag = "timeout"
+                 break
+@@ -146,6 +198,7 @@ class EpisodeEvaluator:
+ 
+         video_filename = f"{env_runner.env_id}_ep{env_runner.episode_id}_{success_flag}_{task_goal}_{env_runner.difficulty}.mp4"
+         recorder.save_video(video_filename)
++        self._save_episode_metrics(env_runner, video_save_dir, success_flag, task_goal)
+ 
+         subgoal_predictor.end_episode(epstate, success_flag)
+         return success_flag
+@@ -208,11 +261,41 @@ class EpisodeEvaluator:
+             "prompt": prompt,
+         }
+ 
++        rec = {"infer_env_step": state.count}
++        if self.mem_client is not None:
++            # image_buffer == frames since the last infer (at the first infer:
++            # the full pre-trajectory incl. the video demo — required, the
++            # offline bank covers the demo prefix too). Executed actions were
++            # recorded per env step; tap runs on the CURRENT front frame.
++            bank_keys, mem_stats = self.mem_client.update_and_get(
++                state.image_buffer, img
++            )
++            element.update(bank_keys)
++            rec.update(mem_stats)
++            sel = np.asarray(self.mem_client.mgr._selection(), dtype=np.int64)
++            rec["event_times"] = np.pad(sel, (0, 6 - len(sel)), constant_values=-1)
++            if self.mem_client.n_infers == 1 or self.mem_client.n_infers % 10 == 0:
++                print(
++                    f"[event-bank] infer {self.mem_client.n_infers}: t={mem_stats['mem_t']} "
++                    f"events={mem_stats['mem_n_events']} summary={mem_stats['mem_has_summary']} "
++                    f"tokens={mem_stats['mem_n_tokens']}"
++                )
++
+         if subgoal is not None:
+             element['simple_subgoal'] = subgoal
+             element['grounded_subgoal'] = subgoal
+ 
+-        action_chunk = client.infer(element)["actions"]
++        resp = client.infer(element)
++        if "alphas" in resp:
++            a = resp["alphas"]
++            print(f"[alpha] t={state.count} skip={a['skip']:.3f} "
++                  f"event={a['event']:.3f} summary={a['summary']:.3f}")
++            rec["alpha_skip"] = float(a["skip"])
++            rec["alpha_event"] = float(a["event"])
++            rec["alpha_summary"] = float(a["summary"])
++            rec["alpha_per_layer"] = np.asarray(a["per_layer"], dtype=np.float32)
++        self._ep_records.append(rec)
++        action_chunk = resp["actions"]
+         return action_chunk[:exec_horizon]
+ 
+ 
+@@ -298,8 +381,24 @@ def evaluate(args: Args):
+         for task in args.exclude_tasks.split(","):
+             log_dict[task] = {str(i): False for i in range(50)}
+ 
++    mem_client = None
++    if args.use_event_bank:
++        if args.use_history:
++            # the event bank replaces the streaming obs buffer; skip add_buffer
++            # round-trips (the mme_gateC server keeps no mem_buffer anyway)
++            print("[event-bank] use_event_bank=True -> disabling use_history/add_buffer")
++            args.use_history = False
++        from event_bank_memory import OnlineEventBankMemory
++        mem_client = OnlineEventBankMemory(
++            encoders=args.mem_encoders,
++            tap_ckpt=args.mem_tap_ckpt,
++            device=args.mem_device,
++            budget=args.event_bank_budget,
++        )
++        print(f"[event-bank] online memory ready (device={args.mem_device})")
++
+     subgoal_predictor = build_subgoal_predictor(args, save_dir)
+-    evaluator = EpisodeEvaluator(args, save_dir)
++    evaluator = EpisodeEvaluator(args, save_dir, mem_client=mem_client)
+ 
+     while not os.path.exists(save_dir / "log.json"):
+         for task_name in task_names:
+@@ -307,7 +406,7 @@ def evaluate(args: Args):
+                 log_dict[task_name] = {}
+ 
+             env_runner = EnvRunner(task_name, video_save_dir, max_steps=args.max_steps)
+-            num_episodes = env_runner.num_episodes
++            num_episodes = min(env_runner.num_episodes, args.max_episodes)
+ 
+             success_flag = "unknown"
+ 
+diff --git a/examples/robomme/subgoal_predictor.py b/examples/robomme/subgoal_predictor.py
+index 7fa8df4..b0d6d35 100644
+--- a/examples/robomme/subgoal_predictor.py
++++ b/examples/robomme/subgoal_predictor.py
+@@ -2,11 +2,19 @@ from typing import Optional, Tuple, Any
+ from pathlib import Path
+ 
+ import os
++import json
+ import shutil
+ from env_runner import EnvRunner
++
++# WAM tick-diagnosis trace: when WAM_DIAG_TRACE=1, the QwenVL predictor logs
++# (tick, prediction, live oracle subgoal) per call and keeps episode frames.
++WAM_DIAG = os.environ.get("WAM_DIAG_TRACE", "0") == "1"
+ from utils import EpisodeState, SUBGOAL_TYPES, TASK_WITH_VIDEO_DEMO
+ 
+-from subgoal_prediction.gemini.api import GeminiModel
++try:
++    from subgoal_prediction.gemini.api import GeminiModel
++except ImportError:
++    pass
+ from subgoal_prediction.gemini.prompts import (
+     DEMO_TEXT_QUERY,
+     IMAGE_TEXT_QUERY,
+@@ -191,10 +199,19 @@ class QwenVLSubgoalPredictor(SubgoalPredictorBase):
+ 
+         response = self.api.call(self.video_buffer[-1], count, keep_period)
+         self.video_buffer.clear()
++        if WAM_DIAG:
++            try:
++                oracle = self.env_runner.grounded_subgoal_oracle
++            except Exception as e:
++                oracle = f"<oracle_err: {e}>"
++            with open(os.path.join(self.save_dir,
++                                   f"diag_{self.env_name}_ep{self.episode_id}.jsonl"), "a") as f:
++                f.write(json.dumps({"count": count, "pred": response,
++                                    "oracle": oracle}) + "\n")
+         return response, False
+-    
++
+     def end_episode(self, epstate: EpisodeState, success_flag: str) -> None:
+-        if self.episode_dir:
++        if self.episode_dir and not WAM_DIAG:
+             shutil.rmtree(self.episode_dir) # save some space, you can comment this function out to keep all video frames
+ 
+ 
+@@ -218,10 +235,32 @@ class MemERSubgoalPredictor(SubgoalPredictorBase):
+         last_subgoal: Optional[str],
+     ) -> Tuple[Optional[str], bool]:
+         response = self.api.call()
++        if WAM_DIAG:
++            try:
++                oracle = self.env_runner.grounded_subgoal_oracle
++            except Exception as e:
++                oracle = f"<oracle_err: {e}>"
++            # keyframe ids = control-step indices of frames the selector has
++            # kept so far; window ids = the 8-frame stride-2 span it saw now
++            import re as _re
++            def _ids(paths):
++                out = []
++                for p in paths:
++                    m = _re.search(r"step_(\d+)_image.png", str(p))
++                    if m:
++                        out.append(int(m.group(1)))
++                return out
++            line = {"count": count, "pred": response, "oracle": oracle,
++                    "keyframes": sorted(self.api.key_frame_paths.keys()),
++                    "window": _ids(getattr(self.api,
++                                           "current_execution_frame_paths", []))}
++            with open(os.path.join(self.save_dir,
++                                   f"diag_{self.env_name}_ep{self.episode_id}.jsonl"), "a") as f:
++                f.write(json.dumps(line) + "\n")
+         return response, False
+ 
+     def end_episode(self, epstate: EpisodeState, success_flag: str) -> None:
+-        if self.episode_dir:
++        if self.episode_dir and not WAM_DIAG:
+             shutil.rmtree(self.episode_dir) # save some space, you can comment this function out to keep all video frames
+ 
+ 
+diff --git a/scripts/serve_policy.py b/scripts/serve_policy.py
+index 84c1726..2f9c632 100644
+--- a/scripts/serve_policy.py
++++ b/scripts/serve_policy.py
+@@ -53,6 +53,10 @@ class Args:
+     record: bool = False
+     seed: int = 42
+ 
++    # ALPHA instrumentation (mme_gateC/attnres3 only): return per-infer mean
++    # 3-slot routing (skip/event/summary) in every infer response.
++    return_alphas: bool = False
++
+     # Specifies how to load the policy. If not provided, the default policy for the environment will be used.
+     policy: Checkpoint | Default = dataclasses.field(default_factory=Default)
+ 
+@@ -82,6 +86,7 @@ def create_policy(args: Args) -> _policy.MME_VLA_Policy:
+             return _policy_config.create_trained_policy(
+                 _config.get_config(args.policy.config), args.policy.dir, default_prompt=args.default_prompt,
+                 seed=args.seed,
++                return_alphas=args.return_alphas,
+             )
+         case Default():
+             return create_default_policy(args.env, default_prompt=args.default_prompt)

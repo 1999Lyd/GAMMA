@@ -1,0 +1,12 @@
+{
+ "red_cube": "a small red block on the table",
+ "green_cube": "a small green block on the table",
+ "blue_cube": "a small blue block on the table",
+ "button": "a grey push button on the table",
+ "target": "a flat square target marker on the table",
+ "container": "white container box",
+ "bin": "bin",
+ "peg": "a long cylindrical peg on the table",
+ "highlight": "a white highlighted area on the table",
+ "stick": "stick"
+}

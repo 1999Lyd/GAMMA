@@ -1,0 +1,500 @@
+{
+ "concepts": [
+  [
+   "a small box on the table",
+   "smallbox",
+   [
+    "butter",
+    "chocolate",
+    "cookies",
+    "cookie",
+    "cream",
+    "popcorn",
+    "pudding"
+   ]
+  ],
+  [
+   "a small snack box on the dining table",
+   "snackbox",
+   [
+    "butter",
+    "chocolate",
+    "cookies",
+    "cookie",
+    "cream",
+    "popcorn",
+    "pudding"
+   ]
+  ],
+  [
+   "an open microwave oven",
+   "microwave_open2",
+   [
+    "microwave"
+   ]
+  ],
+  [
+   "a small white and blue carton on the table",
+   "butter",
+   [
+    "butter"
+   ]
+  ],
+  [
+   "a dark brown box on the table",
+   "chocolate",
+   [
+    "chocolate"
+   ]
+  ],
+  [
+   "a dark brown box on the table",
+   "pudding",
+   [
+    "pudding"
+   ]
+  ],
+  [
+   "a yellow box with a red lid",
+   "cookies",
+   [
+    "cookies",
+    "cookie"
+   ]
+  ],
+  [
+   "an orange snack box with a white label",
+   "popcorn",
+   [
+    "popcorn"
+   ]
+  ],
+  [
+   "a small white carton on the table",
+   "cream",
+   [
+    "cream"
+   ]
+  ],
+  [
+   "a white milk carton",
+   "milk",
+   [
+    "milk"
+   ]
+  ],
+  [
+   "a red bottle on the table",
+   "tomato_sauce",
+   [
+    "tomato"
+   ]
+  ],
+  [
+   "an orange juice bottle",
+   "orange_juice",
+   [
+    "orange"
+   ]
+  ],
+  [
+   "a dark green bottle",
+   "wine",
+   [
+    "wine"
+   ]
+  ],
+  [
+   "a mug on the table",
+   "mug",
+   [
+    "mug",
+    "cup"
+   ]
+  ],
+  [
+   "a black frying pan",
+   "frypan",
+   [
+    "frypan",
+    "pan"
+   ]
+  ],
+  [
+   "a white dish rack with slats",
+   "drainer",
+   [
+    "drainer"
+   ]
+  ],
+  [
+   "a wooden basket with slatted sides",
+   "basket",
+   [
+    "basket"
+   ]
+  ],
+  [
+   "a dark wooden cabinet standing on the table",
+   "cabinet",
+   [
+    "drawer",
+    "cabinet"
+   ]
+  ],
+  [
+   "a black microwave with a door",
+   "microwave",
+   [
+    "microwave"
+   ]
+  ],
+  [
+   "an open microwave with its door open",
+   "microwave_open",
+   [
+    "microwave"
+   ]
+  ],
+  [
+   "an open drawer of the cabinet",
+   "drawer_open",
+   [
+    "drawer"
+   ]
+  ],
+  [
+   "a small box inside the open drawer",
+   "drawer_content",
+   [
+    "drawer"
+   ]
+  ],
+  [
+   "a plate on the table",
+   "plate",
+   [
+    "plate"
+   ]
+  ]
+ ],
+ "always": [
+  [
+   "robot arm",
+   "arm"
+  ]
+ ],
+ "per_frame_vocab": {
+  "open_microwave_0_seed100_task20_f0.png": [
+   "smallbox",
+   "snackbox",
+   "microwave_open2",
+   "chocolate",
+   "cookies",
+   "microwave",
+   "microwave_open",
+   "arm"
+  ],
+  "open_microwave_0_seed100_task20_f60.png": [
+   "smallbox",
+   "snackbox",
+   "microwave_open2",
+   "chocolate",
+   "cookies",
+   "microwave",
+   "microwave_open",
+   "arm"
+  ],
+  "open_top_drawer_0_seed100_task4_f0.png": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "open_top_drawer_0_seed100_task4_f50.png": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "pick_butter_0_seed100_task25_f0.png": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cream",
+   "plate",
+   "arm"
+  ],
+  "pick_butter_0_seed100_task25_f60.png": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cream",
+   "plate",
+   "arm"
+  ],
+  "pick_butter_0_seed101_task15_f0.png": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "milk",
+   "frypan",
+   "arm"
+  ],
+  "pick_butter_0_seed101_task15_f60.png": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "milk",
+   "frypan",
+   "arm"
+  ],
+  "pick_cookies_0_seed100_task1_f0.png": [
+   "smallbox",
+   "snackbox",
+   "cookies",
+   "tomato_sauce",
+   "basket",
+   "arm"
+  ],
+  "pick_cookies_0_seed100_task1_f60.png": [
+   "smallbox",
+   "snackbox",
+   "cookies",
+   "tomato_sauce",
+   "basket",
+   "arm"
+  ],
+  "pick_tomato_sauce_0_seed100_task19_f0.png": [
+   "milk",
+   "tomato_sauce",
+   "orange_juice",
+   "cabinet",
+   "arm"
+  ],
+  "pick_tomato_sauce_0_seed100_task19_f60.png": [
+   "milk",
+   "tomato_sauce",
+   "orange_juice",
+   "cabinet",
+   "arm"
+  ],
+  "pick_wine_bottle_0_seed100_task10_f0.png": [
+   "wine",
+   "mug",
+   "arm"
+  ],
+  "pick_wine_bottle_0_seed100_task10_f140.png": [
+   "wine",
+   "mug",
+   "arm"
+  ],
+  "pick_wine_bottle_0_seed100_task10_f70.png": [
+   "wine",
+   "mug",
+   "arm"
+  ],
+  "task11_seed100_f1353_open_middle_drawer.jpg": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cookies",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "task11_seed100_f435_open_top_drawer.jpg": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cookies",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "task14_seed100_f1382_open_middle_drawer.jpg": [
+   "smallbox",
+   "snackbox",
+   "chocolate",
+   "cookies",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "task14_seed100_f480_open_top_drawer.jpg": [
+   "smallbox",
+   "snackbox",
+   "chocolate",
+   "cookies",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "task16_seed100_f0_start.jpg": [
+   "milk",
+   "mug",
+   "drainer",
+   "arm"
+  ],
+  "task19_seed100_f0_start.jpg": [
+   "milk",
+   "tomato_sauce",
+   "orange_juice",
+   "cabinet",
+   "arm"
+  ],
+  "task1_seed100_f0_start.jpg": [
+   "smallbox",
+   "snackbox",
+   "cookies",
+   "tomato_sauce",
+   "basket",
+   "arm"
+  ],
+  "task20_seed100_f515_open_microwave.jpg": [
+   "smallbox",
+   "snackbox",
+   "microwave_open2",
+   "chocolate",
+   "cookies",
+   "microwave",
+   "microwave_open",
+   "arm"
+  ],
+  "task23_seed100_f515_open_microwave.jpg": [
+   "smallbox",
+   "snackbox",
+   "microwave_open2",
+   "popcorn",
+   "cream",
+   "microwave",
+   "microwave_open",
+   "arm"
+  ],
+  "task25_seed100_f0_start.jpg": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cream",
+   "plate",
+   "arm"
+  ],
+  "task26_seed100_f0_start.jpg": [
+   "smallbox",
+   "snackbox",
+   "chocolate",
+   "pudding",
+   "cream",
+   "plate",
+   "arm"
+  ],
+  "task2_seed100_f0_start.jpg": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "popcorn",
+   "basket",
+   "arm"
+  ],
+  "task3_seed100_f0_start.jpg": [
+   "smallbox",
+   "snackbox",
+   "pudding",
+   "cream",
+   "basket",
+   "arm"
+  ],
+  "task4_seed100_f105_open_top_drawer.jpg": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "task4_seed100_f231_open_middle_drawer.jpg": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "task4_seed100_f357_open_bottom_drawer.jpg": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "task4_seed100_f700_open_top_drawer_again.jpg": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "task5_seed100_f1236_open_middle_drawer_again.jpg": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "task5_seed100_f180_open_top_drawer.jpg": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "task5_seed100_f520_open_middle_drawer.jpg": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "task5_seed100_f758_open_bottom_drawer.jpg": [
+   "smallbox",
+   "snackbox",
+   "butter",
+   "cabinet",
+   "drawer_open",
+   "drawer_content",
+   "arm"
+  ],
+  "task8_seed100_f0_start.jpg": [
+   "smallbox",
+   "snackbox",
+   "chocolate",
+   "tomato_sauce",
+   "frypan",
+   "drainer",
+   "arm"
+  ]
+ },
+ "thr": 0.25
+}

@@ -1,0 +1,280 @@
+# GAMMA: Grounded Multi-Agent Memory with Mechanical Audit
+
+Code for **GAMMA**, a two-agent grounded text memory system for memory-intensive
+robot manipulation. A detector tool (SAM-3) grounds every frame; a VLM **writer**
+distils each replan window into one grounded text line; an append-only **text
+memory bank** is the only history carrier; a VLM **reasoner** reads the bank (no
+pixels) and emits the next grounded subgoal for a fixed subgoal-conditioned
+π0.5 policy. Every agent claim passes a **propose–verify harness** that admits,
+defers, corrects or rejects it against mechanical visual evidence, at corpus
+construction and at deployment alike.
+
+On the sixteen RoboMME memory tasks GAMMA reaches 66.0 % success with the
+policy held fixed (79 % of the privileged oracle ceiling, 84.1 %). Trained
+weights are distributed separately, see [CHECKPOINTS.md](CHECKPOINTS.md).
+
+```
+memory (frames) --> grounded symbolic subgoal --> action chunk
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+                    the only stage this repo learns; the policy is fixed
+```
+
+## Repository layout
+
+| directory | contents |
+|---|---|
+| `corpus/` | corpus generation: SAM-3 detection cache, the evidence-gated target generator for both agents, ms-swift dataset conversion, corpus verification gates, writer rollout that produces the reasoner's training banks |
+| `train/` | ms-swift LoRA fine-tuning scripts for writer and reasoner, open-loop reasoner evaluation, and the end-to-end chain used for the paper's checkpoints |
+| `serve/` | the agent server (writer + reasoner + harness) and the deterministic evidence readers it calls |
+| `eval/` | closed-loop evaluation on RoboMME: the subgoal-predictor client, lane launchers, the diagnostic runs of the single-VLM baselines, and our patches to the benchmark's policy-learning repo |
+| `analysis/` | trace aggregation, tick-level diagnosis, failure annotation videos |
+| `figures/` | scripts that render the paper's figures from logged traces |
+| `rma/` | the RoboMemArena port: frame extraction, camera calibration, grounded-subgoal patching of the policy dataset, SAM-3 prompt probes, the oracle-fed evaluation stack and the policy config |
+| `docs/` | design documents for the RMA port |
+
+All machine-specific locations are read from environment variables. Copy
+`env.sh.example` to `env.sh`, edit the paths, and `source env.sh` before running
+anything.
+
+## Environments
+
+Three Python environments are used, mirroring the development setup:
+
+1. **Agents / detector / server** (`MSSWIFT_PY`): Python ≥ 3.10 with
+   `torch`, `transformers` (a version with `Qwen3.5` and `Sam3Model`), `peft`,
+   `ms-swift` (training), `accelerate`, `deepspeed`, `pillow`, `numpy`.
+   Everything under `corpus/sam3_precompute.py`, `corpus/rollout_agent1.py`,
+   `train/` and `serve/` runs here.
+2. **RoboMME evaluation client** (`CLIENT_PY`): the benchmark's own
+   `openpi_robocasa` client environment (RoboMME simulator + openpi websocket
+   client). `eval/eval_wam_closedloop.py` runs here.
+3. **Plain analysis** (`GAMMA_PY`): `numpy`, `opencv-python`, `matplotlib`,
+   `pyarrow`, `pillow`. Corpus generation (`corpus/gen_wam_sft_v12.py`),
+   `analysis/` and `figures/` run here. `ffmpeg` is needed by
+   `analysis/annotate_failed_eps.py`.
+
+The RoboMemArena stack has its own environment; see
+`rma/eval_stack/EVAL_STACK_SETUP.md`.
+
+## Benchmark setup (RoboMME)
+
+1. Clone the RoboMME policy-learning repository and point `ROBOMME_ROOT` at it.
+   Train (or obtain) the subgoal-conditioned π0.5 executor with their
+   `GroundSG` recipe; the checkpoint we used is in the checkpoint archive
+   (`policy/pi05_subgoal_conditioned_79999`) and is expected at
+   `${ROBOMME_ROOT}/runs/ckpts/mme_vla_suite/symbolic_grounded_repro/79999`
+   (or edit `--policy.dir` in the lane scripts).
+2. Apply our patches to that repo:
+   ```
+   cd ${ROBOMME_ROOT}
+   git apply ${GAMMA_ROOT}/eval/benchmark_patches/robomme_eval_and_serve.patch
+   cp ${GAMMA_ROOT}/eval/wam_subgoal_predictor.py examples/robomme/
+   ```
+   The only parts of that patch GAMMA needs are the `max_episodes` argument in
+   `examples/robomme/eval.py`, the tolerant Gemini import in
+   `subgoal_predictor.py`, and the serve-side changes in `scripts/serve_policy.py`;
+   the event-bank fields in the same patch belong to unrelated experiments and
+   are inert by default. `robomme_qwenvl_memer_diag.patch` adds the
+   `WAM_DIAG_TRACE=1` logging used for the tick-level diagnosis of the
+   GroundSG+QwenVL and MemER baselines (Appendix, `eval/eval_qwenvl_diag.sh`,
+   `eval/eval_memer_diag.sh`). `policy_training_config.patch` is the full diff
+   of the policy-training code and is only needed for the RMA policy
+   (config `rma_ground_sg`), see below.
+3. Export the benchmark's recorded episodes in LeRobot parquet format to
+   `${GAMMA_DATA}/data/robomme_lerobot` (the layout `corpus/gen_wam_sft_v12.py`
+   reads: per-episode parquet with `observation.images.*`, the oracle subgoal
+   columns and the online subgoal column).
+
+## Pipeline
+
+The end-to-end sequence used for the paper's checkpoints is
+`train/pipeline_chain_v17.sh`; the steps are described below so they can be run
+by hand. `V` below is the corpus directory, e.g. `${GAMMA_DATA}/data/wam_sft_v17`.
+
+### 1. Detection cache
+
+SAM-3 (`facebook/sam3`) is run on every frame of the writer's grid (stride 4)
+with the phrase-tuned per-class prompts in `corpus/sam3_prompts.json`; the
+identical detector, prompts and post-processing are used at deployment.
+
+```
+OUT_DIR=$V THR=0.35 CUDA_VISIBLE_DEVICES=0 $MSSWIFT_PY corpus/sam3_precompute.py
+```
+Workers self-balance through lock files, so the same command can be started on
+several GPUs. Output: `$V/dets_sam3/e<episode>.json`.
+
+### 2. Targets for both agents
+
+```
+OUT_DIR=$V DET_DIR=$V/dets_sam3 $GAMMA_PY corpus/gen_wam_sft_v12.py
+```
+writes `agent1_{train,val}.jsonl` (writer records: instruction, phase, last 8
+bank lines, 5 window frames with per-frame detections, the planner's expected
+next subgoal, and the target event line or `NONE`) and `agent2_{train,val}.jsonl`
+(reasoner records: instruction, full bank, target subgoal). The generator
+implements the paper's three train-time contracts: event lines from verified
+trackers (covering events, container-move chains, highlight appearances,
+per-stroke demo records), evidence gates (a line only at the window that shows
+its evidence), and knowability (coordinates the writer cannot see are demoted).
+Validation is `episode_index % 10 == 0`. Knobs: `EVENT_ALIGN`, `SNAP_DEMO`,
+`OVER_*` (all default to the paper settings), `ONLY_FILES`, `LIMIT`, `VAL_ONLY`.
+
+Verification gates run before any training:
+```
+SPLIT=val $GAMMA_PY corpus/audit_derivable.py $V     # every target coordinate is findable in the writer's inputs
+$GAMMA_PY corpus/verify_alignment.py $V              # evidence gates: completed/move/appeared lines land on the window showing them
+$GAMMA_PY corpus/bank_quality_stats_v17.py $V        # bank statistics reported in the paper
+$GAMMA_PY corpus/make_v17_task_videos.py             # one annotated target video per task for review
+```
+
+### 3. Writer (Agent-1) training
+
+```
+SRC=$V $GAMMA_PY corpus/make_agent1_swift.py         # -> agent1_swift_{train,val}.jsonl (ms-swift multimodal format)
+bash train/train_agent1.sh                           # ms-swift LoRA on Qwen/Qwen3.5-9B, 1 epoch, 4 GPUs
+```
+The prompt built by `make_agent1_swift.py` is byte-identical to what
+`rollout_agent1.py` and the server build at inference time (train/serve
+contract). LoRA rank 16, α 32, lr 1e-4, effective batch 64, max length 3200.
+Copy the last checkpoint to `${GAMMA_DATA}/runs/agent1_v17_final`.
+
+### 4. Writer rollout → reasoner corpus
+
+The reasoner is trained on banks the trained writer actually produces, not on
+ground-truth banks:
+```
+for i in 0 1 2 3; do
+  CUDA_VISIBLE_DEVICES=$i CKPT=${GAMMA_DATA}/runs/agent1_v17_final SPLIT=train SHARD=$i NSHARD=4 BATCH=24 \
+    DATA_DIR=$V FRAMES_DIR=$V $MSSWIFT_PY corpus/rollout_agent1.py &
+done; wait
+cat $V/agent2_pred_train.s{0,1,2,3}.jsonl > $V/agent2_pred_train.jsonl
+CKPT=${GAMMA_DATA}/runs/agent1_v17_final SPLIT=val BATCH=24 DATA_DIR=$V FRAMES_DIR=$V $MSSWIFT_PY corpus/rollout_agent1.py
+$GAMMA_PY corpus/snap_agent2_targets.py $V           # reasoner targets: oracle string with coordinates snapped to the predicted bank
+SRC=$V BANKSRC=pred TAG=pred $GAMMA_PY corpus/make_agent2_swift.py
+```
+
+### 5. Reasoner (Agent-2) training and open-loop check
+
+```
+bash train/train_agent2.sh                           # LoRA on Qwen/Qwen3.5-9B, bank-only input, max length 2600
+CKPT=${GAMMA_DATA}/runs/agent2_v17_final VALFILE=$V/agent2_pred_val.jsonl DATA_DIR=$V \
+  WAM_BASE=Qwen/Qwen3.5-9B $MSSWIFT_PY train/eval_agent2.py        # exact-match subgoal accuracy on held-out banks
+```
+`WAM_A2_IMG=1` in `make_agent2_swift.py` and the server restores the earlier
+variant that also shows the reasoner the current frame; the paper's reasoner is
+bank-only (the frame measurably does not help).
+
+For the 0.8B arm, set `WAM_BASE=Qwen/Qwen3.5-0.8B` and `--model Qwen/Qwen3.5-0.8B`
+in the two training scripts; everything else is unchanged.
+
+### 6. Serving: the agent server and the harness
+
+`serve/wam_agent_server.py` loads the base VLM with both LoRA adapters and
+exposes three HTTP endpoints used by the evaluation client:
+
+* `POST /reset` — instruction, task and the demonstration prefix; replays the
+  prefix through the writer in 16-step windows to build the demo record
+  (deterministic readers own the RouteStick / PatternLock / VideoPlaceButton
+  demo claims, see `serve/rs_dir_algo.py`, `serve/vpb_reader.py`).
+* `POST /tick` — the five window frames of one 16-step action chunk; runs SAM-3,
+  the writer, the harness verdicts and the reasoner; returns the subgoal.
+* `POST /episode_end`.
+
+Environment variables:
+
+| variable | meaning |
+|---|---|
+| `WAM_BASE` | base model id (`Qwen/Qwen3.5-9B` or `Qwen/Qwen3.5-0.8B`) |
+| `A1_CKPT`, `A2_CKPT` | writer / reasoner LoRA directories |
+| `PORT` | HTTP port (default 8899) |
+| `WAM_TRACE` | per-tick JSONL trace: detections, writer line, bank, reasoner output, live oracle (the substrate of every analysis script) |
+| `WAM_HARNESS_OFF=1` | disable all serve-time propose–verify machinery (the "no harness" arm) |
+| `WAM_V19_GATES=1` | enable the full-coverage claim gates (pick/place/press deferral, citation guards); the paper's main configuration |
+| `WAM_NO_CORRECT=1` | disable the CORRECT verdict (grounding rebinding) — the "w/o CORRECT" ablation |
+| `WAM_A2_IMG=1` | frame-in-context reasoner variant |
+| `WAM_SWING_AUTO`, `WAM_BINFILL_DISCIPLINE` | retired per-task gates, off by default (kept for the record; both measured harmful) |
+
+The harness itself is documented inline in the server: each verdict names the
+evidence it is anchored on (detection presence/absence at a location,
+occlusion of a known object, arrival within a radius, displacement above a
+threshold) and the measurement that motivated it.
+
+> The "w/o DEFER" and "w/o REJECT" rows of the ablation table were produced with
+> per-verdict switches on a collaborator's serving host; those two switches are
+> not yet merged into this file. `WAM_NO_CORRECT` and `WAM_HARNESS_OFF` are.
+
+### 7. Closed-loop evaluation on RoboMME
+
+One lane = one GPU running the policy server, the agent server and the
+simulator client for a list of tasks:
+```
+bash eval/eval_lane_9b.sh <GPU> on 30 7 laneW        # ARM=on|off, 30 episodes/task, serving seed 7
+TASKS_OVERRIDE=BinFill,PickXtimes bash eval/eval_lane_9b.sh 5 on 30 7 laneW
+bash eval/eval_wam_parallel.sh 79999 30 <run_name> <A1_CKPT> <A2_CKPT>   # two lanes, eight tasks each
+```
+Lane lists (W/X/Y/Z, A/B) are defined at the top of the lane scripts. Results
+land in the benchmark's `runs/evaluation/<run_name>/ckpt<step>/seed<seed>/oracle/`
+as `progress.json` (task → episode → success) plus one annotated video and
+metrics file per episode. Aggregate with
+```
+$GAMMA_PY analysis/agg_progress.py "wam_9b_on_lane*"
+```
+The paper's numbers are the mean over serving seeds 7, 8, 9 at 30 episodes per task.
+
+The client (`eval/eval_wam_closedloop.py`) wraps the benchmark's `eval.py` and
+replaces its oracle subgoal predictor with `eval/wam_subgoal_predictor.py`,
+which talks to the agent server; the benchmark's scoring loop is untouched.
+
+### 8. Analysis and figures
+
+* `analysis/annotate_failed_eps.py --arm <run> --lanes W,X,Y,Z --out DIR` renders one
+  video per failed episode with detections, our and the oracle's cited
+  coordinates, writer line and bank overlaid, plus an `index.md` giving the first
+  tick where our subgoal diverged from the oracle.
+* `analysis/analyze_tick_diag.py` builds the tick-level diagnosis table and
+  figure from the baseline traces written with `WAM_DIAG_TRACE=1`.
+* `analysis/paired_diag.py`, `analysis/failclass.py`, `analysis/stall_mech.py`:
+  paired harness-on/off comparison, failure classification and stall
+  attribution over the serve traces.
+* `figures/make_harness_rs.py`, `figures/make_harness_more.py`: the harness case
+  figures; `figures/make_teaser.py`, `figures/patch_compare.py`: the teaser.
+
+## RoboMemArena port (`rma/`)
+
+Nothing in GAMMA binds to RoboMME: the contracts assume a detector, a tick grid
+and recorded episodes. The port changes two geometry constants (tick 10 steps,
+3 frames per window) and the detector prompts. What is included:
+
+* `rma/extract_rma_frames.py`: episode reconstruction from the per-subtask HDF5
+  files onto the writer's frame grid, with continuity verification.
+* `rma/get_rma_camera.py`, `rma/rma_agentview_camera.json`: the fixed agentview
+  projection used to ground subgoals kinematically.
+* `rma/patch_grounded_subgoals.py`, `rma/verify_grounded_coords.py`: the grounded
+  subgoal stream for the RMA policy dataset (coordinate = gripper position at the
+  segment's interaction anchor, place segments re-anchored at the measured release
+  step) and its verification report (`docs/RMA_GROUNDED_COORD_REPORT.md`).
+* `rma/policy/`: the policy config (`symbolic-grounded-subgoal.yaml`, TrainConfig
+  `rma_ground_sg` in `policy_training_config.patch`), the RMA data transforms and
+  dataset builder for the benchmark's policy-learning code.
+* `rma/eval_stack/`: the closed-loop evaluation stack around the official
+  RoboMemArena benchmark (fixed protocol: seeds 50–99, 50 trials/task) with an
+  **oracle-fed** runner (`run_rma_oracle_eval.py`, `rma_oracle_subgoal.py`) that
+  feeds the subgoal-conditioned policy the grounded subgoal stream from simulator
+  state, advancing exactly when the benchmark's own stage predicates register
+  each subtask. This is the RMA analogue of the privileged ceiling row.
+  `RMA_ORACLE=1 bash run_rma_eval.sh <cfg> <exp> <ckpt> <server_gpu_uuid> <client_gpu_uuid>`.
+* `rma/probe_sam3_rma.py`, `rma/prompts_rma_draft.json`: the SAM-3 prompt
+  tuning probe for the RMA object vocabulary.
+
+`docs/RMA_SPEC_AND_PLAN.md` and `docs/RMA_TASK_DOSSIER.md` are the working
+specification of the port.
+
+## Citation
+
+Paper under review (ICLR 2027 submission). A citation entry will be added on
+acceptance.
+
+## License
+
+MIT, see [LICENSE](LICENSE). The RoboMME and RoboMemArena benchmarks, openpi,
+ms-swift, Qwen and SAM-3 are governed by their own licenses.

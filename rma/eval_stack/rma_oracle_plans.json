@@ -1,0 +1,1978 @@
+{
+ "1": [
+  {
+   "instr": "pick up the cookies",
+   "kind": "pick",
+   "obj": "cookies_1",
+   "median": [
+    132,
+    142
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the cookies into the basket",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    103,
+    228
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "pick up the tomato sauce",
+   "kind": "pick",
+   "obj": "tomato_sauce_1",
+   "median": [
+    131,
+    117
+   ],
+   "iqr": [
+    0.0,
+    0.25
+   ]
+  },
+  {
+   "instr": "place the tomato sauce into the basket",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    103,
+    228
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  }
+ ],
+ "2": [
+  {
+   "instr": "pick up the butter",
+   "kind": "pick",
+   "obj": "butter_1",
+   "median": [
+    145,
+    125
+   ],
+   "iqr": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "instr": "place the butter into the basket",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    114,
+    166
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "pick up the popcorn",
+   "kind": "pick",
+   "obj": "popcorn_1",
+   "median": [
+    145,
+    86
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the popcorn into the basket",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    114,
+    166
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  }
+ ],
+ "3": [
+  {
+   "instr": "pick up the cream",
+   "kind": "pick",
+   "obj": "cream_cheese_1",
+   "median": [
+    145,
+    125
+   ],
+   "iqr": [
+    1.0,
+    2.0
+   ]
+  },
+  {
+   "instr": "place the cream into the basket",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    114,
+    166
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "pick up the pudding",
+   "kind": "pick",
+   "obj": "chocolate_pudding_1",
+   "median": [
+    145,
+    86
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the pudding into the basket",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    114,
+    166
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  }
+ ],
+ "4": [
+  {
+   "instr": "open the top drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    128,
+    185
+   ],
+   "iqr": [
+    2.25,
+    4.0
+   ]
+  },
+  {
+   "instr": "close the top drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    128,
+    203
+   ],
+   "iqr": [
+    27.25,
+    5.75
+   ]
+  },
+  {
+   "instr": "open the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    140,
+    184
+   ],
+   "iqr": [
+    3.0,
+    5.0
+   ]
+  },
+  {
+   "instr": "close the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    140,
+    212
+   ],
+   "iqr": [
+    3.0,
+    8.0
+   ]
+  },
+  {
+   "instr": "open the bottom drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    151,
+    183
+   ],
+   "iqr": [
+    2.25,
+    5.0
+   ]
+  },
+  {
+   "instr": "close the bottom drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    151,
+    212
+   ],
+   "iqr": [
+    4.0,
+    5.0
+   ]
+  },
+  {
+   "instr": "open the top drawer again",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    122,
+    167
+   ],
+   "iqr": [
+    3.0,
+    4.75
+   ]
+  },
+  {
+   "instr": "place the butter into the top drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    130,
+    100
+   ],
+   "iqr": [
+    1.0,
+    2.75
+   ]
+  },
+  {
+   "instr": "close the top drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    128,
+    203
+   ],
+   "iqr": [
+    27.25,
+    5.75
+   ]
+  }
+ ],
+ "5": [
+  {
+   "instr": "open the top drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    128,
+    186
+   ],
+   "iqr": [
+    3.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "close the top drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    129,
+    201
+   ],
+   "iqr": [
+    3.0,
+    6.0
+   ]
+  },
+  {
+   "instr": "open the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    140,
+    184
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "close the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    141,
+    198
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "open the bottom drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    151,
+    183
+   ],
+   "iqr": [
+    3.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "close the bottom drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    152,
+    211
+   ],
+   "iqr": [
+    4.0,
+    3.25
+   ]
+  },
+  {
+   "instr": "open the middle drawer again",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    141,
+    161
+   ],
+   "iqr": [
+    3.0,
+    3.0
+   ]
+  },
+  {
+   "instr": "place the butter into the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    132,
+    94
+   ],
+   "iqr": [
+    29.0,
+    7.0
+   ]
+  },
+  {
+   "instr": "close the middle drawer final",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    99,
+    208
+   ],
+   "iqr": [
+    4.25,
+    3.0
+   ]
+  }
+ ],
+ "6": [
+  {
+   "instr": "pick up the tomato sauce",
+   "kind": "pick",
+   "obj": "tomato_sauce_1",
+   "median": [
+    138,
+    111
+   ],
+   "iqr": [
+    11.0,
+    10.0
+   ]
+  },
+  {
+   "instr": "pour the tomato sauce over cookies first time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    116,
+    36
+   ],
+   "iqr": [
+    2.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "pour the tomato sauce over cookies second time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    123,
+    40
+   ],
+   "iqr": [
+    5.25,
+    6.25
+   ]
+  },
+  {
+   "instr": "place tomato sauce in the bowl drainer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    106,
+    215
+   ],
+   "iqr": [
+    2.0,
+    3.0
+   ]
+  }
+ ],
+ "7": [
+  {
+   "instr": "pick up the tomato sauce",
+   "kind": "pick",
+   "obj": "tomato_sauce_1",
+   "median": [
+    142,
+    127
+   ],
+   "iqr": [
+    3.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "pour the tomato sauce into the frypan first time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    114,
+    171
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "pour the tomato sauce into the frypan second time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    100,
+    181
+   ],
+   "iqr": [
+    0.0,
+    2.0
+   ]
+  },
+  {
+   "instr": "place tomato sauce in the bowl drainer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    85,
+    217
+   ],
+   "iqr": [
+    1.25,
+    4.0
+   ]
+  }
+ ],
+ "8": [
+  {
+   "instr": "pick up the chocolate",
+   "kind": "pick",
+   "obj": "chocolate_pudding_1",
+   "median": [
+    133,
+    99
+   ],
+   "iqr": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "instr": "place the chocolate in frypan",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    118,
+    150
+   ],
+   "iqr": [
+    0.0,
+    2.0
+   ]
+  },
+  {
+   "instr": "pick up the tomato sauce",
+   "kind": "pick",
+   "obj": "tomato_sauce_1",
+   "median": [
+    153,
+    93
+   ],
+   "iqr": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "instr": "pour the tomato sauce over chocolate first time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    112,
+    154
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "pour the tomato sauce over chocolate second time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    100,
+    154
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place tomato sauce in the bowl drainer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    94,
+    213
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  }
+ ],
+ "9": [
+  {
+   "instr": "pick up the butter",
+   "kind": "pick",
+   "obj": "butter_1",
+   "median": [
+    161,
+    90
+   ],
+   "iqr": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "instr": "place the butter in frypan",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    118,
+    176
+   ],
+   "iqr": [
+    0.0,
+    2.0
+   ]
+  },
+  {
+   "instr": "pick up the tomato sauce",
+   "kind": "pick",
+   "obj": "tomato_sauce_1",
+   "median": [
+    121,
+    93
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "pour the tomato sauce over butter first time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    97,
+    178
+   ],
+   "iqr": [
+    1.0,
+    2.0
+   ]
+  },
+  {
+   "instr": "pour the tomato sauce over butter second time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    100,
+    181
+   ],
+   "iqr": [
+    0.0,
+    2.0
+   ]
+  },
+  {
+   "instr": "place tomato sauce in the bowl drainer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    91,
+    215
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  }
+ ],
+ "10": [
+  {
+   "instr": "pick up the wine bottle",
+   "kind": "pick",
+   "obj": "wine_bottle_1",
+   "median": [
+    125,
+    167
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "pour the wine bottle into the white yellow mug first time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    118,
+    163
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "pour the wine bottle into the white yellow mug second time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    121,
+    167
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the wine bottle on table",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    125,
+    169
+   ],
+   "iqr": [
+    0.0,
+    0.0
+   ]
+  }
+ ],
+ "11": [
+  {
+   "instr": "open the top drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    129,
+    172
+   ],
+   "iqr": [
+    2.0,
+    5.0
+   ]
+  },
+  {
+   "instr": "pick up the cookies",
+   "kind": "pick",
+   "obj": "cookies_1",
+   "median": [
+    176,
+    64
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the cookies into the top drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    124,
+    205
+   ],
+   "iqr": [
+    2.0,
+    5.0
+   ]
+  },
+  {
+   "instr": "close the top drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    98,
+    203
+   ],
+   "iqr": [
+    5.0,
+    2.0
+   ]
+  },
+  {
+   "instr": "open the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    141,
+    219
+   ],
+   "iqr": [
+    2.0,
+    5.0
+   ]
+  },
+  {
+   "instr": "pick up the butter",
+   "kind": "pick",
+   "obj": "butter_1",
+   "median": [
+    161,
+    90
+   ],
+   "iqr": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "instr": "place the butter into middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    134,
+    202
+   ],
+   "iqr": [
+    3.0,
+    6.0
+   ]
+  },
+  {
+   "instr": "close the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    109,
+    202
+   ],
+   "iqr": [
+    3.0,
+    5.0
+   ]
+  }
+ ],
+ "12": [
+  {
+   "instr": "open the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    140,
+    171
+   ],
+   "iqr": [
+    3.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "pick up the cookies",
+   "kind": "pick",
+   "obj": "cookies_1",
+   "median": [
+    176,
+    64
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the cookies into middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    121,
+    204
+   ],
+   "iqr": [
+    2.0,
+    6.0
+   ]
+  },
+  {
+   "instr": "pick up the chocolate",
+   "kind": "pick",
+   "obj": "chocolate_pudding_1",
+   "median": [
+    123,
+    77
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the chocolate into middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    115,
+    204
+   ],
+   "iqr": [
+    2.0,
+    7.25
+   ]
+  },
+  {
+   "instr": "close the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    91,
+    203
+   ],
+   "iqr": [
+    3.0,
+    5.0
+   ]
+  }
+ ],
+ "13": [
+  {
+   "instr": "open the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    140,
+    171
+   ],
+   "iqr": [
+    3.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "pick up the cookies",
+   "kind": "pick",
+   "obj": "cookies_1",
+   "median": [
+    176,
+    64
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place cookies into the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    115,
+    214
+   ],
+   "iqr": [
+    2.25,
+    6.0
+   ]
+  },
+  {
+   "instr": "pick up the butter",
+   "kind": "pick",
+   "obj": "butter_1",
+   "median": [
+    161,
+    90
+   ],
+   "iqr": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "instr": "place butter into the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    121,
+    215
+   ],
+   "iqr": [
+    3.0,
+    5.0
+   ]
+  },
+  {
+   "instr": "close the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    98,
+    209
+   ],
+   "iqr": [
+    5.0,
+    4.0
+   ]
+  }
+ ],
+ "14": [
+  {
+   "instr": "open the top drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    129,
+    168
+   ],
+   "iqr": [
+    3.0,
+    5.0
+   ]
+  },
+  {
+   "instr": "pick up the cookies",
+   "kind": "pick",
+   "obj": "cookies_1",
+   "median": [
+    177,
+    64
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the cookies into top drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    109,
+    216
+   ],
+   "iqr": [
+    3.0,
+    3.0
+   ]
+  },
+  {
+   "instr": "close the top drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    87,
+    208
+   ],
+   "iqr": [
+    4.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "open the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    140,
+    184
+   ],
+   "iqr": [
+    2.0,
+    5.0
+   ]
+  },
+  {
+   "instr": "pick up the chocolate pudding",
+   "kind": "pick",
+   "obj": "chocolate_pudding_1",
+   "median": [
+    123,
+    76
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the chocolate pudding into middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    121,
+    214
+   ],
+   "iqr": [
+    2.0,
+    5.25
+   ]
+  },
+  {
+   "instr": "close the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    97,
+    209
+   ],
+   "iqr": [
+    4.0,
+    4.0
+   ]
+  }
+ ],
+ "15": [
+  {
+   "instr": "pick up the butter",
+   "kind": "pick",
+   "obj": "butter_1",
+   "median": [
+    161,
+    90
+   ],
+   "iqr": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "instr": "place the butter in the frypan",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    123,
+    154
+   ],
+   "iqr": [
+    0.0,
+    2.0
+   ]
+  },
+  {
+   "instr": "pick up the milk",
+   "kind": "pick",
+   "obj": "milk_1",
+   "median": [
+    134,
+    98
+   ],
+   "iqr": [
+    1.0,
+    2.0
+   ]
+  },
+  {
+   "instr": "pour the milk in the frypan first time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    111,
+    149
+   ],
+   "iqr": [
+    1.0,
+    2.0
+   ]
+  },
+  {
+   "instr": "pour the milk in the frypan second time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    115,
+    149
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the milk on table",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    134,
+    99
+   ],
+   "iqr": [
+    0.0,
+    0.0
+   ]
+  }
+ ],
+ "16": [
+  {
+   "instr": "pick up the milk",
+   "kind": "pick",
+   "obj": "milk_1",
+   "median": [
+    124,
+    97
+   ],
+   "iqr": [
+    1.0,
+    2.0
+   ]
+  },
+  {
+   "instr": "pour the milk into the red coffee mug first time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    122,
+    98
+   ],
+   "iqr": [
+    2.0,
+    5.0
+   ]
+  },
+  {
+   "instr": "pour the milk into the red coffee mug second time",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    126,
+    95
+   ],
+   "iqr": [
+    1.0,
+    5.25
+   ]
+  },
+  {
+   "instr": "place the milk into the bowl drainer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    89,
+    218
+   ],
+   "iqr": [
+    1.0,
+    4.0
+   ]
+  }
+ ],
+ "17": [
+  {
+   "instr": "open the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    140,
+    171
+   ],
+   "iqr": [
+    3.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "pick up the butter",
+   "kind": "pick",
+   "obj": "butter_1",
+   "median": [
+    161,
+    90
+   ],
+   "iqr": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "instr": "place butter into the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    121,
+    203
+   ],
+   "iqr": [
+    3.0,
+    6.0
+   ]
+  },
+  {
+   "instr": "pick up the chocolate pudding",
+   "kind": "pick",
+   "obj": "chocolate_pudding_1",
+   "median": [
+    122,
+    76
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place chocolate pudding into the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    115,
+    213
+   ],
+   "iqr": [
+    3.0,
+    5.0
+   ]
+  },
+  {
+   "instr": "close the middle drawer",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    90,
+    211
+   ],
+   "iqr": [
+    3.0,
+    3.25
+   ]
+  }
+ ],
+ "18": [
+  {
+   "instr": "pick up the chocolate",
+   "kind": "pick",
+   "obj": "chocolate_pudding_1",
+   "median": [
+    114,
+    94
+   ],
+   "iqr": [
+    8.0,
+    18.5
+   ]
+  },
+  {
+   "instr": "place the chocolate from cabinet1 on cabinet2",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    112,
+    192
+   ],
+   "iqr": [
+    2.25,
+    20.75
+   ]
+  },
+  {
+   "instr": "pick up the butter",
+   "kind": "pick",
+   "obj": "butter_1",
+   "median": [
+    113,
+    95
+   ],
+   "iqr": [
+    8.0,
+    19.0
+   ]
+  },
+  {
+   "instr": "place the butter from cabinet1 on cabinet2",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    113,
+    166
+   ],
+   "iqr": [
+    2.0,
+    20.75
+   ]
+  }
+ ],
+ "19": [
+  {
+   "instr": "pick up the tomato_sauce",
+   "kind": "pick",
+   "obj": "tomato_sauce_1",
+   "median": [
+    107,
+    90
+   ],
+   "iqr": [
+    8.25,
+    16.5
+   ]
+  },
+  {
+   "instr": "place the tomato_sauce from cabinet1 on cabinet2",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    96,
+    196
+   ],
+   "iqr": [
+    2.0,
+    20.25
+   ]
+  },
+  {
+   "instr": "pick up the milk",
+   "kind": "pick",
+   "obj": "milk_1",
+   "median": [
+    110,
+    92
+   ],
+   "iqr": [
+    7.0,
+    15.0
+   ]
+  },
+  {
+   "instr": "place the milk from cabinet1 on cabinet2",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    105,
+    195
+   ],
+   "iqr": [
+    2.0,
+    22.0
+   ]
+  },
+  {
+   "instr": "pick up the orange_juice",
+   "kind": "pick",
+   "obj": "orange_juice_1",
+   "median": [
+    112,
+    91
+   ],
+   "iqr": [
+    9.0,
+    14.0
+   ]
+  },
+  {
+   "instr": "place the orange_juice from cabinet1 on cabinet2",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    95,
+    181
+   ],
+   "iqr": [
+    2.0,
+    20.0
+   ]
+  }
+ ],
+ "20": [
+  {
+   "instr": "open the microwave door",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    94,
+    165
+   ],
+   "iqr": [
+    1.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "pick up the cookies",
+   "kind": "pick",
+   "obj": "cookies_1",
+   "median": [
+    168,
+    110
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the cookies in the microwave",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    130,
+    216
+   ],
+   "iqr": [
+    2.0,
+    4.25
+   ]
+  },
+  {
+   "instr": "pick up the chocolate pudding",
+   "kind": "pick",
+   "obj": "chocolate_pudding_1",
+   "median": [
+    160,
+    90
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the chocolate pudding in the microwave",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    131,
+    217
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "close the microwave door",
+   "kind": "microwave_closed",
+   "obj": null,
+   "median": [
+    117,
+    206
+   ],
+   "iqr": [
+    2.0,
+    4.25
+   ]
+  }
+ ],
+ "21": [
+  {
+   "instr": "open the microwave door",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    97,
+    164
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "pick up the butter",
+   "kind": "pick",
+   "obj": "butter_1",
+   "median": [
+    168,
+    110
+   ],
+   "iqr": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "instr": "place the butter in the microwave",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    129,
+    216
+   ],
+   "iqr": [
+    2.0,
+    4.25
+   ]
+  },
+  {
+   "instr": "pick up the chocolate pudding",
+   "kind": "pick",
+   "obj": "chocolate_pudding_1",
+   "median": [
+    160,
+    90
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the chocolate pudding in the microwave",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    131,
+    217
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "close the microwave door",
+   "kind": "microwave_closed",
+   "obj": null,
+   "median": [
+    125,
+    205
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  }
+ ],
+ "22": [
+  {
+   "instr": "pick up the tomato sauce",
+   "kind": "pick",
+   "obj": "tomato_sauce_1",
+   "median": [
+    139,
+    92
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "pour tomato sauce over cookies",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    131,
+    90
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "pour tomato sauce over cookies again",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    133,
+    90
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place tomato sauce aside",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    138,
+    92
+   ],
+   "iqr": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "instr": "open the microwave door",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    94,
+    165
+   ],
+   "iqr": [
+    0.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "pick up the cookies",
+   "kind": "pick",
+   "obj": "cookies_1",
+   "median": [
+    169,
+    91
+   ],
+   "iqr": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place cookies in the microwave",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    129,
+    216
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "close the microwave door",
+   "kind": "microwave_closed",
+   "obj": null,
+   "median": [
+    117,
+    199
+   ],
+   "iqr": [
+    2.0,
+    3.0
+   ]
+  }
+ ],
+ "23": [
+  {
+   "instr": "open the microwave door",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    97,
+    164
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "pick up the cream cheese",
+   "kind": "pick",
+   "obj": "cream_cheese_1",
+   "median": [
+    168,
+    110
+   ],
+   "iqr": [
+    2.0,
+    2.0
+   ]
+  },
+  {
+   "instr": "place the cream cheese in the microwave",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    129,
+    216
+   ],
+   "iqr": [
+    3.0,
+    4.25
+   ]
+  },
+  {
+   "instr": "pick up the popcorn",
+   "kind": "pick",
+   "obj": "popcorn_1",
+   "median": [
+    160,
+    90
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the popcorn in the microwave",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    127,
+    217
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "close the microwave door",
+   "kind": "microwave_closed",
+   "obj": null,
+   "median": [
+    125,
+    205
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  }
+ ],
+ "24": [
+  {
+   "instr": "open the microwave door",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    94,
+    165
+   ],
+   "iqr": [
+    1.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "pick up the cookies",
+   "kind": "pick",
+   "obj": "cookies_1",
+   "median": [
+    168,
+    110
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the cookies in the microwave",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    130,
+    216
+   ],
+   "iqr": [
+    2.0,
+    4.25
+   ]
+  },
+  {
+   "instr": "pick up the popcorn",
+   "kind": "pick",
+   "obj": "popcorn_1",
+   "median": [
+    160,
+    90
+   ],
+   "iqr": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "instr": "place the popcorn in the microwave",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    127,
+    217
+   ],
+   "iqr": [
+    2.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "close the microwave door",
+   "kind": "microwave_closed",
+   "obj": null,
+   "median": [
+    117,
+    206
+   ],
+   "iqr": [
+    2.0,
+    4.25
+   ]
+  }
+ ],
+ "25": [
+  {
+   "instr": "pick up the butter from plate 1",
+   "kind": "pick",
+   "obj": "butter_1",
+   "median": [
+    174,
+    83
+   ],
+   "iqr": [
+    6.0,
+    2.0
+   ]
+  },
+  {
+   "instr": "place the butter from plate 1 on plate 2",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    156,
+    152
+   ],
+   "iqr": [
+    7.0,
+    10.0
+   ]
+  },
+  {
+   "instr": "pick up the cream cheese from plate 1",
+   "kind": "pick",
+   "obj": "cream_cheese_1",
+   "median": [
+    175,
+    99
+   ],
+   "iqr": [
+    5.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "place the cream cheese from plate 1 on plate 2",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    157,
+    152
+   ],
+   "iqr": [
+    7.0,
+    10.0
+   ]
+  }
+ ],
+ "26": [
+  {
+   "instr": "pick up the chocolate pudding from plate 1",
+   "kind": "pick",
+   "obj": "chocolate_pudding_1",
+   "median": [
+    166,
+    81
+   ],
+   "iqr": [
+    17.0,
+    4.0
+   ]
+  },
+  {
+   "instr": "place the chocolate pudding from plate 1 on plate 2",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    158,
+    151
+   ],
+   "iqr": [
+    6.0,
+    10.0
+   ]
+  },
+  {
+   "instr": "pick up the cream cheese from plate 1",
+   "kind": "pick",
+   "obj": "cream_cheese_1",
+   "median": [
+    175,
+    99
+   ],
+   "iqr": [
+    4.25,
+    3.25
+   ]
+  },
+  {
+   "instr": "place the cream cheese from plate 1 on plate 2",
+   "kind": "stage",
+   "obj": null,
+   "median": [
+    158,
+    151
+   ],
+   "iqr": [
+    6.0,
+    10.0
+   ]
+  }
+ ]
+}
