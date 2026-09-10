@@ -23,6 +23,42 @@ memory (frames) --> grounded symbolic subgoal --> action chunk
   <img src="assets/system_overview.png" width="85%" alt="GAMMA system overview: each replan tick the SAM-3 detector grounds the window frames; the writer (Agent-1) distils them into at most one grounded event line; the reasoner (Agent-2) reads the append-only bank and emits the next grounded subgoal; every claim passes the propose-verify harness.">
 </p>
 
+## Results (RoboMME, 16 memory tasks, closed loop)
+
+Success rate (%), mean over three serving seeds at 30 episodes per task, all with
+the same fixed subgoal-conditioned π0.5 executor. Baseline and oracle rows are
+the benchmark's reported numbers.
+
+| configuration | memory | Avg | checkpoint |
+|---|---|---:|---|
+| π0.5 end-to-end | none | 17.9 | benchmark |
+| FrameSamp+Modul (best memory-VLA) | latent frame memory | 44.5 | benchmark |
+| MemER-style keyframe pipeline | VLM keyframe selection | 42.4 | benchmark |
+| GroundSG+QwenVL (single VLM) | raw frames | 32.7 | benchmark |
+| **GAMMA (ours)** | verified grounded text + harness | **66.0** | [GAMMA_checkpoints.zip](CHECKPOINTS.md) — Drive link **TBD** |
+| GroundSG+Oracle (privileged ceiling) | oracle subgoals | 84.1 | benchmark |
+
+Harness ablation (one verdict disabled at a time): w/o DEFER 62.7, w/o REJECT 55.1,
+w/o CORRECT 65.0.
+
+<details>
+<summary>Per-task numbers</summary>
+
+| | PickX | BinF | SwingX | StopC | VU | BU | VUS | BUS | PH | VRP | VPB | VPO | MC | IP | PL | RS | Avg |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| π0.5 e2e | 42.9 | 30.0 | 35.6 | 6.7 | 20.4 | 22.2 | 18.7 | 6.7 | 11.3 | 0.4 | 31.1 | 25.8 | 26.0 | 1.6 | 2.9 | 4.7 | 17.9 |
+| FrameSamp+Modul | 87.3 | 39.6 | 92.0 | 42.0 | 32.7 | 25.1 | 24.4 | 18.2 | 22.9 | 30.4 | 60.0 | 32.0 | 77.8 | 7.6 | 53.6 | 66.7 | 44.5 |
+| MemER | 79.3 | 56.7 | 59.3 | 0.0 | 81.3 | 72.0 | 38.0 | 21.3 | 70.7 | 25.3 | 30.0 | 26.0 | 82.7 | 6.7 | 16.7 | 12.0 | 42.4 |
+| GroundSG+QwenVL | 92.7 | 52.0 | 7.3 | 0.0 | 88.7 | 24.0 | 30.7 | 14.0 | 15.1 | 25.3 | 54.0 | 31.8 | 71.6 | 3.3 | 6.7 | 6.0 | 32.7 |
+| **GAMMA** | 98.9 | 71.1 | 68.9 | 35.5 | 86.7 | 84.4 | 75.6 | 35.6 | 71.1 | 65.6 | 75.5 | 66.7 | 62.2 | 3.3 | 98.9 | 56.7 | **66.0** |
+| GroundSG+Oracle | 100.0 | 85.8 | 100.0 | 49.7 | 98.8 | 95.0 | 99.2 | 80.2 | 83.3 | 97.3 | 100.0 | 100.0 | 87.8 | 15.6 | 97.0 | 55.6 | 84.1 |
+
+Task keys: PickX PickXtimes, BinF BinFill, SwingX SwingXtimes, StopC StopCube,
+VU VideoUnmask, BU ButtonUnmask, VUS VideoUnmaskSwap, BUS ButtonUnmaskSwap,
+PH PickHighlight, VRP VideoRepick, VPB VideoPlaceButton, VPO VideoPlaceOrder,
+MC MoveCube, IP InsertPeg, PL PatternLock, RS RouteStick.
+</details>
+
 ## Repository layout
 
 | directory | contents |
