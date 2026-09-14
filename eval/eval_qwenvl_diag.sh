@@ -22,7 +22,7 @@ EPISODES=${3:-10}
 TASKS=${4:-ButtonUnmask,ButtonUnmaskSwap,StopCube,VideoUnmaskSwap,VideoRepick,VideoPlaceOrder,PatternLock,RouteStick}
 SEED=${SEED:-7}; STEP=79999; NAME=${NAME:-qwenvl_groundsg_diag}
 O=${ROBOMME_ROOT}
-VENV=${QWENVL_VENV:?set QWENVL_VENV to the benchmark QwenVL venv}
+VENV=/home/user/belief_vla_migration/robomme_qwenvl_venv
 L=${GAMMA_LOGS}
 HOLD=${GAMMA_ROOT}/eval/gpu_hold.py
 

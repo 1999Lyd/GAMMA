@@ -59,7 +59,7 @@ import numpy as np
 from mme_vla_suite.dataset_builder import rma_h5_utils as rh
 from mme_vla_suite.dataset_builder.rma_task_prompts import TASK_PROMPTS
 
-DEFAULT_RMA_ROOT = os.environ.get("RMA_DATA_ROOT", "/path/to/RoboMemArena")
+DEFAULT_RMA_ROOT = os.path.expandvars("${DATA_ROOT}/rma_data/RoboMemArena")
 DEFAULT_OUT = "data/rma_preprocessed_data"
 
 ACTION_CHUNK_HORIZON = 20

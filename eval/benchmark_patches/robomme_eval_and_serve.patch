@@ -13,8 +13,8 @@ index 245f305..64fc16c 100644
 +    # infer request. Off by default: baselines and other variants unaffected.
 +    use_event_bank: bool = False
 +    mem_device: str = "cuda"
-+    mem_encoders: str = "/home/yl817/belief_vla_migration/robomme_setup/scratch/qformer_gateB/general_encoders.pt"
-+    mem_tap_ckpt: str = "/home/yl817/belief_vla_migration/openpi_robocasa/checkpoints/pi05_robomme_full_vanilla/full_vanilla_std/40000"
++    mem_encoders: str = "/home/user/belief_vla_migration/robomme_setup/scratch/qformer_gateB/general_encoders.pt"
++    mem_tap_ckpt: str = "/home/user/belief_vla_migration/openpi_robocasa/checkpoints/pi05_robomme_full_vanilla/full_vanilla_std/40000"
 +    event_bank_budget: int = 448  # must match the training-side fixed pad
 +
      # task control

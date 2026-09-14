@@ -5,8 +5,8 @@
 #
 # e.g.
 #   ./run_rma_eval.sh rma_fs_modul rma_fs_modul_s7 20000 \
-#       GPU-2c6cc99e-25c7-05a7-ed4e-83f78a6a75a8 \
-#       GPU-cc03980a-3467-e28c-a80e-222d05d31389
+#       ${GPU5} \
+#       ${GPU1}
 #
 # Starts scripts/serve_policy.py (training venv, server GPU) on $MME_RMA_PORT,
 # waits for the port, then runs their run_all_tasks1_26.py through
@@ -26,10 +26,11 @@ fi
 
 CFG="$1"; EXP="$2"; CKPT="$3"; SERVER_GPU="$4"; CLIENT_GPU="$5"
 
-STACK_DIR="${GAMMA_ROOT}/rma/eval_stack"
-TRAIN_REPO="${ROBOMME_ROOT}"
-BENCH="${RMA_BENCH_ROOT}"
-LOG_DIR="${GAMMA_LOGS}"
+MIGRATION_ROOT=/home/user/belief_vla_migration
+STACK_DIR="${MIGRATION_ROOT}/rma_eval_stack"
+TRAIN_REPO="${MIGRATION_ROOT}/robomme_policy_learning_official"
+BENCH="${MIGRATION_ROOT}/rma_eval_repo/evaluation_benchmark"
+LOG_DIR="${MIGRATION_ROOT}/logs"
 
 CKPT_DIR="${RMA_CKPT_DIR:-${TRAIN_REPO}/runs/ckpts/${CFG}/${EXP}/${CKPT}}"
 OUT_ROOT="${RMA_OUT_ROOT:-${STACK_DIR}/outputs/${EXP}_${CKPT}}"

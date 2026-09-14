@@ -57,19 +57,21 @@ for j,t in enumerate(['Fixed','pi-0.5','policy']):
     d.text((2553,690+j*62),t,font=FPB,fill=(51,51,50),anchor='ma')
 
 # --- 5. headline bars band (MemoryVLA-style) + footer on extended canvas ---
-BARH=310
+BARH=350
 big=Image.new('RGB',(2752,1536+BARH),(255,255,255))
 big.paste(im.crop((0,0,2752,1416)),(0,0))
 d=ImageDraw.Draw(big)
 d.line([70,1436,2682,1436],fill=(225,225,225),width=2)
-bars=[('pi-0.5 e2e',17.9,(160,160,160),0),('MemER',42.4,(210,140,140),0),
-      ('FrameSamp+Modul',44.5,(210,140,140),0),('GAMMA (ours)',66.0,(46,125,50),0),
-      ('GroundSG oracle',84.1,(200,200,200),1)]
-X0,XW,BW,BASE,SC=560,2100,210,1700,2.4   # baseline y, px per point
+bars=[('pi-0.5 e2e',17.9,(160,160,160),0,''),('MemER',42.4,(210,140,140),0,''),
+      ('FrameSamp+Modul',44.5,(210,140,140),0,''),
+      ('GAMMA 0.8B agents',57.4,(129,178,131),0,''),
+      ('GAMMA (ours)',66.0,(46,125,50),0,''),
+      ('GroundSG oracle',84.1,(200,200,200),1,'(privileged)')]
+X0,XW,BW,BASE,SC=560,2100,190,1700,2.4   # baseline y, px per point
 d.text((80,1500),'average success on the',font=FB(30),fill=(45,45,45))
 d.text((80,1540),'16-task suite (%)',font=FB(30),fill=(45,45,45))
 step=XW//len(bars)
-for i,(name,v,col,priv) in enumerate(bars):
+for i,(name,v,col,priv,sub) in enumerate(bars):
     cx=X0+i*step+step//2
     h=int(v*SC); y0=BASE-h
     if priv:
@@ -77,9 +79,9 @@ for i,(name,v,col,priv) in enumerate(bars):
     else:
         d.rectangle([cx-BW//2,y0,cx+BW//2,BASE],fill=col)
     d.text((cx,y0-38),f'{v:.1f}',font=FB(30),fill=(45,45,45) if not priv else (120,120,120),anchor='ma')
-    d.text((cx,BASE+10),name,font=F(24),fill=(70,70,70),anchor='ma')
-    if priv:
-        d.text((cx,BASE+42),'(privileged)',font=F(22),fill=(150,150,150),anchor='ma')
+    d.text((cx,BASE+10),name,font=F(23),fill=(70,70,70),anchor='ma')
+    if sub:
+        d.text((cx,BASE+42),sub,font=F(21),fill=(150,150,150),anchor='ma')
 d.line([X0-40,BASE-int(84.1*SC),X0+XW,BASE-int(84.1*SC)],fill=(170,170,170),width=2)
 d.line([X0-40,BASE,X0+XW-260,BASE],fill=(90,90,90),width=3)
 

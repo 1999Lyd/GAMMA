@@ -13,7 +13,7 @@ EPISODES=${3:-10}
 TASKS=${4:-VideoUnmaskSwap,VideoRepick,VideoPlaceOrder,PickHighlight,ButtonUnmask,ButtonUnmaskSwap}
 SEED=${SEED:-7}; STEP=79999; NAME=${NAME:-memer_diag}
 O=${ROBOMME_ROOT}
-VENV=${QWENVL_VENV:?set QWENVL_VENV to the benchmark QwenVL venv}
+VENV=/home/user/belief_vla_migration/robomme_qwenvl_venv
 L=${GAMMA_LOGS}
 
 find_free_port(){ for i in $(seq 1 500); do p=$(shuf -i 20000-30000 -n1);

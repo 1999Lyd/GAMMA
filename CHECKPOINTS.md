@@ -11,12 +11,15 @@ GAMMA_checkpoints/
   adapters/
     agent1_v17_final/      writer  (Agent-1) LoRA on Qwen3.5-9B   -- the paper's main-table checkpoint
     agent2_v17_final/      reasoner (Agent-2) LoRA on Qwen3.5-9B  -- trained on writer rollouts (bank-only)
-    agent1_0p8b_final/     writer  LoRA on Qwen3.5-0.8B           -- small-scale arm (not in the paper's tables)
+    agent1_0p8b_final/     writer  LoRA on Qwen3.5-0.8B           -- the 0.8B arm of the main and ablation tables
     agent2_0p8b_final/     reasoner LoRA on Qwen3.5-0.8B
+    agent1_rma_v1/         writer  LoRA on Qwen3.5-9B for RoboMemArena (1 epoch on the RMA corpus)
   policy/
     pi05_subgoal_conditioned_79999/   the fixed subgoal-conditioned pi0.5 executor (openpi/JAX checkpoint,
                                       RoboMME "GroundSG" recipe, step 79999). Shared by every configuration
                                       in the paper and never modified.
+    rma_pi05_sgprompt_79999/          the RoboMemArena executor: the benchmark authors' pi0.5 recipe
+                                      (subtask text as prompt, 40k updates, batch 128), openpi/JAX checkpoint.
 ```
 
 Each adapter directory holds `adapter_config.json`, `adapter_model.safetensors`,

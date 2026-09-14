@@ -1,0 +1,399 @@
+{
+ "cookies": {
+  "a small yellow box on the table": {
+   "mean_best": 0.141,
+   "hit@0.15": 0.38,
+   "fp_per_frame": 0.25
+  },
+  "a yellow box": {
+   "mean_best": 0.099,
+   "hit@0.15": 0.12,
+   "fp_per_frame": 0.1
+  },
+  "a small yellow package": {
+   "mean_best": 0.01,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "a yellow snack box": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "a yellow box with a red lid": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  }
+ },
+ "tomato_sauce": {
+  "a red bottle on the table": {
+   "mean_best": 0.375,
+   "hit@0.15": 0.93,
+   "fp_per_frame": 0.34
+  },
+  "a small red bottle": {
+   "mean_best": 0.347,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.34
+  },
+  "a red bottle": {
+   "mean_best": 0.275,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.34
+  },
+  "a red can": {
+   "mean_best": 0.741,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.48
+  },
+  "a red condiment bottle": {
+   "mean_best": 0.057,
+   "hit@0.15": 0.03,
+   "fp_per_frame": 0.0
+  }
+ },
+ "butter": {
+  "a small white and blue carton on the table": {
+   "mean_best": 0.003,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.31
+  },
+  "a small white box": {
+   "mean_best": 0.043,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 3.36
+  },
+  "a white and blue box": {
+   "mean_best": 0.002,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.24
+  },
+  "a small blue and white carton": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "a butter box": {
+   "mean_best": 0.035,
+   "hit@0.15": 0.02,
+   "fp_per_frame": 0.42
+  }
+ },
+ "popcorn": {
+  "an orange snack box with a white label": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "an orange box": {
+   "mean_best": 0.055,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.4
+  },
+  "a small orange box on the table": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "an orange package": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "a popcorn box": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  }
+ },
+ "cream_cheese": {
+  "a small white carton on the table": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.53
+  },
+  "a white box": {
+   "mean_best": 0.007,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.63
+  },
+  "a small white package": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "a white carton": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "a cream cheese box": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  }
+ },
+ "chocolate_pudding": {
+  "a dark brown box on the table": {
+   "mean_best": 0.169,
+   "hit@0.15": 0.18,
+   "fp_per_frame": 0.93
+  },
+  "a brown box": {
+   "mean_best": 0.298,
+   "hit@0.15": 0.8,
+   "fp_per_frame": 2.2
+  },
+  "a small brown box": {
+   "mean_best": 0.489,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 6.77
+  },
+  "a dark box on the table": {
+   "mean_best": 0.115,
+   "hit@0.15": 0.11,
+   "fp_per_frame": 0.39
+  },
+  "a chocolate box": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  }
+ },
+ "milk": {
+  "a white milk carton": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "a milk carton": {
+   "mean_best": 0.01,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "a white carton": {
+   "mean_best": 0.01,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.42
+  },
+  "a tall white box": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.58
+  },
+  "a milk box": {
+   "mean_best": 0.012,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  }
+ },
+ "wine_bottle": {
+  "a dark green bottle": {
+   "mean_best": 0.425,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  },
+  "a wine bottle": {
+   "mean_best": 0.725,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  },
+  "a green bottle on the table": {
+   "mean_best": 0.102,
+   "hit@0.15": 0.2,
+   "fp_per_frame": 0.0
+  },
+  "a dark bottle": {
+   "mean_best": 0.904,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  },
+  "a bottle of wine": {
+   "mean_best": 0.839,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  }
+ },
+ "orange_juice": {
+  "an orange juice bottle": {
+   "mean_best": 0.479,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  },
+  "an orange bottle": {
+   "mean_best": 0.379,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  },
+  "a juice bottle": {
+   "mean_best": 0.314,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  },
+  "an orange carton": {
+   "mean_best": 0.278,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  },
+  "a bottle of orange juice": {
+   "mean_best": 0.482,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  }
+ },
+ "basket": {
+  "a wooden basket with slatted sides": {
+   "mean_best": 0.253,
+   "hit@0.15": 0.87,
+   "fp_per_frame": 0.33
+  },
+  "a basket": {
+   "mean_best": 0.451,
+   "hit@0.15": 0.87,
+   "fp_per_frame": 1.6
+  },
+  "a wicker basket on the table": {
+   "mean_best": 0.459,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 1.87
+  },
+  "a wooden basket": {
+   "mean_best": 0.211,
+   "hit@0.15": 0.47,
+   "fp_per_frame": 0.73
+  }
+ },
+ "drawer": {
+  "a dark wooden cabinet standing on the table": {
+   "mean_best": 0.428,
+   "hit@0.15": 0.47,
+   "fp_per_frame": 4.47
+  },
+  "a cabinet with drawers": {
+   "mean_best": 0.477,
+   "hit@0.15": 0.47,
+   "fp_per_frame": 7.38
+  },
+  "a wooden cabinet": {
+   "mean_best": 0.465,
+   "hit@0.15": 0.47,
+   "fp_per_frame": 9.71
+  },
+  "a chest of drawers": {
+   "mean_best": 0.276,
+   "hit@0.15": 0.47,
+   "fp_per_frame": 1.12
+  }
+ },
+ "microwave": {
+  "a black microwave with a door": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 1.0
+  },
+  "a microwave": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 1.0
+  },
+  "a microwave oven": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 1.0
+  },
+  "a black microwave oven": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 1.0
+  }
+ },
+ "frypan": {
+  "a black frying pan": {
+   "mean_best": 0.954,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.25
+  },
+  "a frying pan": {
+   "mean_best": 0.92,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.05
+  },
+  "a pan on the table": {
+   "mean_best": 0.918,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  },
+  "a black pan": {
+   "mean_best": 0.946,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.1
+  }
+ },
+ "mug": {
+  "a mug on the table": {
+   "mean_best": 0.957,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  },
+  "a red mug": {
+   "mean_best": 0.606,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  },
+  "a coffee mug": {
+   "mean_best": 0.95,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  },
+  "a cup": {
+   "mean_best": 0.946,
+   "hit@0.15": 1.0,
+   "fp_per_frame": 0.0
+  }
+ },
+ "drainer": {
+  "a white dish rack with slats": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "a dish rack": {
+   "mean_best": 0.09,
+   "hit@0.15": 0.32,
+   "fp_per_frame": 0.0
+  },
+  "a bowl drainer": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "a white dish drainer": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  }
+ },
+ "plate": {
+  "a plate on the table": {
+   "mean_best": 0.0,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "a white plate": {
+   "mean_best": 0.053,
+   "hit@0.15": 0.11,
+   "fp_per_frame": 0.11
+  },
+  "a plate": {
+   "mean_best": 0.013,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.0
+  },
+  "a dish": {
+   "mean_best": 0.023,
+   "hit@0.15": 0.0,
+   "fp_per_frame": 0.11
+  }
+ }
+}

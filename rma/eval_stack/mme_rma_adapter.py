@@ -147,6 +147,7 @@ class MMERMAAdapter(BasePolicyAdapter):
         poll_interval: float = 0.05,
         strict_horizon: bool = True,
         state_convention: str = "harness",
+        prompt_from_subgoal: bool = False,
     ) -> None:
         if state_convention not in STATE_CONVENTIONS:
             raise ValueError(f"state_convention must be one of {STATE_CONVENTIONS}, got {state_convention!r}")
@@ -164,6 +165,9 @@ class MMERMAAdapter(BasePolicyAdapter):
         self.action_horizon = int(action_horizon)
         self.poll_interval = float(poll_interval)
         self.strict_horizon = bool(strict_horizon)
+        # authors'-protocol S1 (rma_pi05_sgprompt): the oracle subtask text is
+        # sent AS the prompt (their reference: prompt_for_vla = current subtask).
+        self.prompt_from_subgoal = bool(prompt_from_subgoal)
 
         # frames + states observed since the last infer; the last entry is
         # always the frame the next infer is conditioned on.
@@ -236,6 +240,8 @@ class MMERMAAdapter(BasePolicyAdapter):
         if subgoal:
             element["grounded_subgoal"] = subgoal
             element["simple_subgoal"] = subgoal.split(" at <")[0]
+            if self.prompt_from_subgoal:
+                element["prompt"] = self._prompt(subgoal.split(" at <")[0])
             path = os.environ.get("RMA_SUBGOAL_LOG")
             if path:
                 with open(path, "a") as fh:
@@ -368,4 +374,5 @@ def build_adapter(**kwargs: Any) -> BasePolicyAdapter:
         action_horizon=int(kwargs.get("action_horizon", DEFAULT_ACTION_HORIZON)),
         strict_horizon=_as_bool(kwargs.get("strict_horizon"), True),
         state_convention=str(kwargs.get("state_convention", "harness")),
+        prompt_from_subgoal=_as_bool(kwargs.get("prompt_from_subgoal"), False),
     )

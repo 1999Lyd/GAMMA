@@ -1,5 +1,5 @@
-assets: /path/to/RoboMemArena/evaluation_benchmark/libero_fork/libero/assets
-bddl_files: /path/to/RoboMemArena/bddl
-benchmark_root: /path/to/RoboMemArena/evaluation_benchmark/libero_fork/libero
-datasets: /path/to/RoboMemArena/evaluation_benchmark/libero_fork/libero/../datasets
-init_states: /path/to/RoboMemArena/evaluation_benchmark/libero_fork/libero/init_files
+assets: ${RMA_BENCH_ROOT}/libero_fork/libero/assets
+bddl_files: ${RMA_BENCH_ROOT}/../bddl
+benchmark_root: ${RMA_BENCH_ROOT}/libero_fork/libero
+datasets: ${RMA_BENCH_ROOT}/libero_fork/libero/../datasets
+init_states: ${RMA_BENCH_ROOT}/libero_fork/libero/init_files

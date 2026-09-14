@@ -189,7 +189,15 @@ def _v19_video():
     # is clean on this task). BinFill deliberately NOT included: a bin
     # deposit is unobservable to the detector (cube hidden, arm centroid
     # far), so gating it would deadlock.
-    return "watch the video" in il or "repeating this action" in il
+    # v25 (measured 2026-09-12): PickXtimes LEAVES the scope again. Its v22
+    # inclusion switched on the place auto-claim, whose any-window-frame
+    # evidence fires on the hover before release: 18/30 premature
+    # auto-claims per seed (s7/s8/s9), desynced episodes 2/21, 1/17, 3/21
+    # successful vs 8/9, 10/13, 6/9 without desync; task 70.0 -> 33.3/36.7/
+    # 30.0. The 70.0 run (attempts 30-59 of the 09-09 trace) had PickX
+    # outside this scope: 0 premature auto-claims, the count carried by the
+    # writer's pick lines. VideoRepick keeps the gates (its own readers).
+    return "watch the video" in il
 
 
 def _v19_button():
@@ -500,19 +508,48 @@ def build_from_demo(instr, frames, cur=None):
     # "place ... correct target" citation at /tick (CORRECT).
     vpb_task = "right after the button" in (instr or "").lower() or \
         "right before the button" in (instr or "").lower()
+    # v25 (2026-09-10): the same reader parses VideoPlaceOrder's ordinal
+    # ("the k-th target it was previously placed on", 81% corpus recovery)
+    # but was never armed for it, so the v23 pad pin and the v24 place pin
+    # never fired on VPO. Opt-in switch so running lanes are unaffected.
+    if os.environ.get("WAM_VPO_READER") == "1" and \
+            "target it was previously placed on" in (instr or "").lower():
+        vpb_task = True
     _vpb_track, _vpb_targets = {}, []
+    # v26 (2026-09-11): VideoRepick DEMO READER. The demo picks one of three
+    # identical cubes, drops it, and then the cubes are shuffled; the
+    # "correct cube" is the demo-picked one tracked THROUGH that shuffle.
+    # The 0.8B writer writes the shuffle as a move chain whose links do not
+    # join (20 of 77 serve links broken) and whose fold reaches the oracle's
+    # cube in 13 of 29 episodes, so the reasoner names the wrong cube and the
+    # episode fails on the first pick. The percept is a nearest-neighbour
+    # track over detections -- the same tracker the corpus generator runs
+    # offline (40/40 GT episodes) -- so the reader owns it, seeded by the
+    # writer's own demo-pick line (open-loop 9/10 at both scales).
+    # VideoRepick ships two instruction wordings ("repeatedly pick up and put
+    # down ... for three times" and "pick up ... again"); both name the same
+    # percept, so key the reader on the phrase they share.
+    vrp_task = "the same block that was previously picked up" in (instr or "").lower()
+    _vrp_frames = {}
     _vpb_col = (re.search(r"(red|green|blue) cube", (instr or "").lower())
                 or [None, "cube"])[1]
     for end in range(SNAP, len(frames), SNAP):
         idx = list(range(end-SNAP, end+1, FSTEP))
         pils = [frames[min(i, len(frames)-1)] for i in idx]
         dets = detect(pils)
+        if vrp_task and not HARNESS_OFF and os.environ.get("WAM_VRP_READER") == "1":
+            for _i, _d in zip(idx, dets):
+                _vrp_frames[_i] = [(x, y) for n, x, y in (_d or [])
+                                   if n.endswith("_cube")]
         if vpb_task and not HARNESS_OFF:
             for _i, _d in zip(idx, dets):
                 _cs = [(x, y) for n, x, y in (_d or []) if n == f"{_vpb_col}_cube"]
                 _vpb_track[_i] = _cs[0] if _cs else None
                 _vpb_targets += [(x, y) for n, x, y in (_d or []) if n == "target"]
             STATE["_vpb_demo"] = (instr, _vpb_track, _vpb_targets)
+        if vrp_task and not HARNESS_OFF and os.environ.get("WAM_VRP_READER") == "1":
+            STATE["_vrp_demo"] = True
+            STATE["_vrp_frames"] = _vrp_frames
         rs_task = "navigate around" in (instr or "").lower()
         pl_task = "retrace" in (instr or "").lower()
         if rs_task or pl_task:
@@ -543,6 +580,8 @@ def build_from_demo(instr, frames, cur=None):
                         STATE["rs_vlm_dropped"] = \
                             STATE.get("rs_vlm_dropped", 0) + 1
                         continue
+                    if vrp_task and "demo showed: drop" in ln:
+                        STATE["_vrp_drop_end"] = end
                     bank_append(end, ln)
         # v18: deterministic numbered-plain stroke lines, emitted in the
         # exact v17 training format at the window containing each stroke's
@@ -576,6 +615,50 @@ def build_from_demo(instr, frames, cur=None):
                                 f"move {_s['word']}  [sam] (none)")
                     STATE["lat_overridden"] = \
                         STATE.get("lat_overridden", 0) + 1
+
+
+def _vrp_finish(frames_by_idx):
+    """v26: track the demo-picked cube through the shuffle (VideoRepick).
+
+    Seed = the writer's 'demo showed: pick up the cube at <x, y>' line.  The
+    shuffle happens after the drop, so the track starts at the drop window
+    (the cube is dropped close to where it was picked) and then walks the
+    demo frames in order, taking the nearest cube detection at each step --
+    the corpus generator's tracker, run at serve time."""
+    import re as _re
+    try:
+        _seed = None
+        for ln in STATE["bank"]:
+            m = _re.search(r"demo showed: pick up the cube at "
+                           r"<\s*(-?\d+)\s*,\s*(-?\d+)\s*>", ln)
+            if m:
+                _seed = (int(m.group(1)), int(m.group(2)))
+                break
+        if _seed is None or not frames_by_idx:
+            STATE["vrp_pos"] = None
+            return
+        _start = STATE.get("_vrp_drop_end")
+        _idxs = sorted(frames_by_idx)
+        if _start is not None:
+            _idxs = [i for i in _idxs if i >= _start] or _idxs
+        _cur, _hops, _lost = _seed, 0, 0
+        for _i in _idxs:
+            _cs = frames_by_idx.get(_i) or []
+            if not _cs:
+                continue
+            _nb = min(_cs, key=lambda c: (c[0]-_cur[0])**2 + (c[1]-_cur[1])**2)
+            if (_nb[0]-_cur[0])**2 + (_nb[1]-_cur[1])**2 > 45**2:
+                _lost += 1          # implausible jump: keep the current fix
+                continue
+            if _nb != _cur:
+                _hops += 1
+            _cur = _nb
+        STATE["vrp_pos"] = list(_cur)
+        STATE["vrp_seed"] = list(_seed)
+        STATE["vrp_hops"], STATE["vrp_lost"] = _hops, _lost
+    except Exception as _e:
+        STATE["vrp_pos"] = None
+        STATE["vrp_err"] = repr(_e)
 
 
 def _vpb_finish(instr, track, targets):
@@ -633,12 +716,17 @@ class H(BaseHTTPRequestHandler):
                        # v23: VPB demo reader + colour-aware citation guard
                        "vpb_pad", "vpb_drops", "vpb_pinned", "cite_fixed",
                        "cls_hist", "place_strict",
-                       "plan_pinned", "bf_origin", "bf_absent_run", "bf_put_auto"):
+                       "plan_pinned", "bf_origin", "bf_absent_run", "bf_put_auto",
+                       # v26: VideoRepick demo tracker
+                       "vrp_pos", "vrp_seed", "vrp_hops", "vrp_lost",
+                       "vrp_err", "vrp_pinned", "_vrp_drop_end"):
                 STATE.pop(_k, None)
             STATE.pop("_vpb_demo", None)
             build_from_demo(STATE["instr"], frames, cur)
             if STATE.get("_vpb_demo"):
                 _vpb_finish(*STATE.pop("_vpb_demo"))
+            if STATE.pop("_vrp_demo", None) is not None:
+                _vrp_finish(STATE.pop("_vrp_frames", {}) or {})
             # v23: strict window-dwell placement evidence deadlocks repeat
             # tasks (PickX: 31% of true placements never admitted -> stuck);
             # keep it only where the place is the final step.
@@ -651,6 +739,8 @@ class H(BaseHTTPRequestHandler):
                  "lat_overridden": STATE.get("lat_overridden", 0),
                  "instruction": STATE["instr"], "n_demo": len(frames),
                  "vpb_pad": STATE.get("vpb_pad"), "vpb_drops": STATE.get("vpb_drops"),
+                 "vrp_pos": STATE.get("vrp_pos"), "vrp_seed": STATE.get("vrp_seed"),
+                 "vrp_hops": STATE.get("vrp_hops"), "vrp_lost": STATE.get("vrp_lost"),
                  "bank_after_demo": list(STATE["bank"])})
             self._send({"bank": STATE["bank"], "n_demo": len(frames),
                         "secs": round(time.time()-t, 1)})
@@ -1214,6 +1304,29 @@ class H(BaseHTTPRequestHandler):
             # (>=3 of the window frames). Trace simulation: VPO 203 fires,
             # 109 land on the oracle, 8 on already-correct ticks; VPB 909 /
             # 265 / 1; scoped to these two tasks (PickX would misfire).
+            # v26 VRP CORRECT-CUBE PIN: the demo tracker owns the identity
+            # of the cube the video picked. The citation is re-snapped to
+            # the nearest live cube detection so it follows the object the
+            # arm has just put down, and only while the tracker holds a
+            # position (a lost track leaves the writer's answer alone).
+            _mvr = re.search(r"pick up the correct cube at "
+                             r"<\s*(\d+)\s*,\s*(\d+)\s*>", sub)
+            if _mvr and STATE.get("vrp_pos") and not HARNESS_OFF \
+                    and not os.environ.get("WAM_NO_CORRECT"):
+                _vp = tuple(STATE["vrp_pos"])
+                _cc = [(x, y) for d in dets if d for n, x, y in d
+                       if n.endswith("_cube")]
+                if _cc:
+                    _nb = min(_cc, key=lambda q: (q[0]-_vp[0])**2 + (q[1]-_vp[1])**2)
+                    if (_nb[0]-_vp[0])**2 + (_nb[1]-_vp[1])**2 <= 30**2:
+                        _vp = _nb
+                        STATE["vrp_pos"] = list(_vp)
+                _ci = (int(_mvr.group(1)), int(_mvr.group(2)))
+                if abs(_ci[0]-_vp[0]) + abs(_ci[1]-_vp[1]) > 6:
+                    sub = (sub[:_mvr.start()]
+                           + f"pick up the correct cube at <{_vp[0]}, {_vp[1]}>"
+                           + sub[_mvr.end():])
+                    STATE["vrp_pinned"] = STATE.get("vrp_pinned", 0) + 1
             _il3 = STATE.get("instr", "").lower()
             _mcol = re.search(r"place the (red|green|blue) cube on the", _il3)
             if _mcol and V19 and not HARNESS_OFF \

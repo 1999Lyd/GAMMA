@@ -88,8 +88,8 @@ ${GAMMA_ROOT}/rma/eval_stack/run_rma_eval.sh \
 # concrete example
 ${GAMMA_ROOT}/rma/eval_stack/run_rma_eval.sh \
     rma_fs_modul rma_fs_modul_s7 20000 \
-    GPU-2c6cc99e-25c7-05a7-ed4e-83f78a6a75a8 \
-    GPU-cc03980a-3467-e28c-a80e-222d05d31389
+    ${GPU5} \
+    ${GPU1}
 ```
 
 `<cfg>` is one of `rma_fs_modul` / `rma_dual_fs` / `rma_dualgate_fs`; the checkpoint
@@ -208,7 +208,7 @@ below).
 # 1. env stack only -- no policy, no server. Needs EGL (see Deviations).
 cd ${GAMMA_ROOT}/rma/eval_stack
 MUJOCO_GL=egl PYOPENGL_PLATFORM=egl \
-CUDA_VISIBLE_DEVICES=GPU-2c6cc99e-25c7-05a7-ed4e-83f78a6a75a8 MUJOCO_EGL_DEVICE_ID=5 \
+CUDA_VISIBLE_DEVICES=${GPU5} MUJOCO_EGL_DEVICE_ID=5 \
 .venv/bin/python smoke_env_only.py
 
 # 2. adapter wire protocol -- CPU only, mock server, no GPU

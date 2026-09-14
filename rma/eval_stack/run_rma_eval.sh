@@ -5,8 +5,8 @@
 #
 # e.g.
 #   ./run_rma_eval.sh rma_fs_modul rma_fs_modul_s7 20000 \
-#       GPU-2c6cc99e-25c7-05a7-ed4e-83f78a6a75a8 \
-#       GPU-cc03980a-3467-e28c-a80e-222d05d31389
+#       ${GPU5} \
+#       ${GPU1}
 #
 # Starts scripts/serve_policy.py (training venv, server GPU) on $MME_RMA_PORT,
 # waits for the port, then runs their run_all_tasks1_26.py through
@@ -26,10 +26,11 @@ fi
 
 CFG="$1"; EXP="$2"; CKPT="$3"; SERVER_GPU="$4"; CLIENT_GPU="$5"
 
-STACK_DIR="${GAMMA_ROOT}/rma/eval_stack"
-TRAIN_REPO="${ROBOMME_ROOT}"
-BENCH="${RMA_BENCH_ROOT}"
-LOG_DIR="${GAMMA_LOGS}"
+MIGRATION_ROOT=/home/user/belief_vla_migration
+STACK_DIR="${MIGRATION_ROOT}/rma_eval_stack"
+TRAIN_REPO="${MIGRATION_ROOT}/robomme_policy_learning_official"
+BENCH="${MIGRATION_ROOT}/rma_eval_repo/evaluation_benchmark"
+LOG_DIR="${MIGRATION_ROOT}/logs"
 
 CKPT_DIR="${RMA_CKPT_DIR:-${TRAIN_REPO}/runs/ckpts/${CFG}/${EXP}/${CKPT}}"
 OUT_ROOT="${RMA_OUT_ROOT:-${STACK_DIR}/outputs/${EXP}_${CKPT}}"
@@ -38,12 +39,20 @@ SERVER_LOG="${LOG_DIR}/rma_serve_${EXP}_${CKPT}.log"
 
 # ---- fixed protocol -------------------------------------------------------
 SEED=50
+# 2026-09-14 DIAGNOSTIC ONLY: RMA_DIAG_TRAIN_SEEDS=<seed> evaluates on the
+# authors' default seeds (their runners: SEED=100, i.e. the TRAINING layouts
+# seed100..). Never a benchmark number; out dirs must carry TRAINSEEDS.
+if [[ -n "${RMA_DIAG_TRAIN_SEEDS:-}" ]]; then
+    SEED="${RMA_DIAG_TRAIN_SEEDS}"
+    echo "WARNING: RMA_DIAG_TRAIN_SEEDS=${SEED} -> TRAINING-LAYOUT DIAGNOSTIC, not a benchmark number." >&2
+fi
 NUM_TRIALS="${RMA_NUM_TRIALS:-50}"
 if [[ "${NUM_TRIALS}" != 50 ]]; then
     echo "WARNING: num-trials=${NUM_TRIALS} != 50 -> INTEGRATION PROBE, not a benchmark number." >&2
 fi
 REPLAN_STEPS=10
 ACTION_HORIZON="${RMA_ACTION_HORIZON:-20}"
+PROMPT_FROM_SUBGOAL="${RMA_PROMPT_FROM_SUBGOAL:-0}"   # 1: oracle subtask sent AS the prompt (rma_pi05_sgprompt)
 MAX_STEPS=2500
 NUM_STEPS_WAIT=10
 RESIZE_SIZE=256
@@ -57,11 +66,11 @@ if [[ "${STATE_CONVENTION}" != "harness" ]]; then
     echo "WARNING: state_convention=${STATE_CONVENTION} -> OFF-PROTOCOL diagnostic run, not a benchmark number." >&2
 fi
 
-if (( SEED >= 100 )); then
+if [[ -z "${RMA_DIAG_TRAIN_SEEDS:-}" ]] && (( SEED >= 100 )); then
     echo "FATAL: seed ${SEED} >= 100 -- those are TRAINING layouts. Refusing." >&2
     exit 1
 fi
-if (( SEED + NUM_TRIALS > 100 )); then
+if [[ -z "${RMA_DIAG_TRAIN_SEEDS:-}" ]] && (( SEED + NUM_TRIALS > 100 )); then
     echo "FATAL: seed range ${SEED}..$((SEED + NUM_TRIALS - 1)) leaks into training layouts (>=100). Refusing." >&2
     exit 1
 fi
@@ -155,7 +164,10 @@ fi
 # ---- 2. benchmark sweep ---------------------------------------------------
 # RMA_ORACLE=1: privileged grounded-subgoal oracle feeds the S1 policy
 # (rma_eval_stack/run_rma_oracle_eval.py; same loop/scoring/outputs).
-if [[ "${RMA_ORACLE:-0}" == "1" ]]; then
+if [[ "${RMA_GAMMA:-0}" == "1" ]]; then
+    CLIENT_SCRIPT="${STACK_DIR}/run_rma_gamma_eval.py"
+    echo "[run_rma_eval] GAMMA run (agent server ${RMA_AGENT_HOST:-127.0.0.1}:${RMA_AGENT_PORT:-8140}; no sim hooks)" | tee -a "${LOG_FILE}"
+elif [[ "${RMA_ORACLE:-0}" == "1" ]]; then
     CLIENT_SCRIPT="${STACK_DIR}/run_rma_oracle_eval.py"
     echo "[run_rma_eval] ORACLE-FED run (grounded subgoals from sim state)" | tee -a "${LOG_FILE}"
 else
@@ -171,7 +183,7 @@ MME_RMA_HOST="${MME_RMA_HOST}" \
 MME_RMA_PORT="${MME_RMA_PORT}" \
 "${STACK_DIR}/.venv/bin/python" "${CLIENT_SCRIPT}" \
     --adapter-spec "${STACK_DIR}/mme_rma_adapter.py:build_adapter" \
-    --adapter-kwargs "{\"host\": \"${MME_RMA_HOST}\", \"port\": ${MME_RMA_PORT}, \"state_convention\": \"${STATE_CONVENTION}\", \"action_horizon\": ${ACTION_HORIZON}}" \
+    --adapter-kwargs "{\"host\": \"${MME_RMA_HOST}\", \"port\": ${MME_RMA_PORT}, \"state_convention\": \"${STATE_CONVENTION}\", \"action_horizon\": ${ACTION_HORIZON}, \"prompt_from_subgoal\": ${PROMPT_FROM_SUBGOAL}}" \
     --task-start "${TASK_START}" \
     --task-end "${TASK_END}" \
     --num-trials-per-task "${NUM_TRIALS}" \
