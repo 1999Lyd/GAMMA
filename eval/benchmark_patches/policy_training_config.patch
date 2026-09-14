@@ -1,5 +1,5 @@
 diff --git a/scripts/train.py b/scripts/train.py
-index a8be7a5..acc2dfe 100644
+index a8be7a5..30496a1 100644
 --- a/scripts/train.py
 +++ b/scripts/train.py
 @@ -135,6 +135,16 @@ def init_train_state(
@@ -100,7 +100,7 @@ index a8be7a5..acc2dfe 100644
      init_logging()
      logging.info(f"Running on: {platform.node()}")
      logging.info(f"TrainConfig: {config}")
-@@ -349,10 +414,18 @@ def main(config: _config.TrainConfig, tentative_run: bool = False):
+@@ -349,10 +414,21 @@ def main(config: _config.TrainConfig, tentative_run: bool = False):
      history_config = get_history_config(config.model.history_config)
      
      if history_config:
@@ -117,12 +117,15 @@ index a8be7a5..acc2dfe 100644
 +        # script executing replan_steps=5 of it).
 +        if history_config.streaming_obs_horizon != 16:
              raise ValueError(f"Unsupported streaming_obs_horizon: {history_config.streaming_obs_horizon}")
-+        if not config.name.startswith("libero_"):
++        # rma_simple_sg_par: RoboMemArena's own chunk length (their
++        # pi05_robomemarena predicts 10 and the harness executes all 10);
++        # symbolic memory builds no mem_buffer, so the horizon is unused.
++        if not config.name.startswith(("libero_", "rma_simple_sg_par")):
 +            assert config.model.action_horizon == 20, "action_horizon must be 20 when streaming_obs_horizon is 16"
  
      data_config = config.data.create(config.assets_dirs, config.model)
      logging.info(f"data_config: {data_config}")
-@@ -378,7 +451,13 @@ def main(config: _config.TrainConfig, tentative_run: bool = False):
+@@ -378,7 +454,13 @@ def main(config: _config.TrainConfig, tentative_run: bool = False):
      images_to_log = [
          wandb.Image(
              np.concatenate(
@@ -137,7 +140,7 @@ index a8be7a5..acc2dfe 100644
              )
          )
          for i in range(min(1, len(next(iter(batch[0].images.values())))))
-@@ -433,6 +512,49 @@ def main(config: _config.TrainConfig, tentative_run: bool = False):
+@@ -433,6 +515,49 @@ def main(config: _config.TrainConfig, tentative_run: bool = False):
                      stats_dict = get_stats(stats)
                      pbar.write(f"Recurrent Memory Stats: {stats_dict}")
  
@@ -187,8 +190,62 @@ index a8be7a5..acc2dfe 100644
              info_str = ", ".join(f"{k}={v:.4f}" for k, v in reduced_info.items())
              pbar.write(f"Step {step}: {info_str}")
              wandb.log(reduced_info, step=step)
+diff --git a/src/mme_vla_suite/policies/policy_config.py b/src/mme_vla_suite/policies/policy_config.py
+index f081c57..2c0d959 100644
+--- a/src/mme_vla_suite/policies/policy_config.py
++++ b/src/mme_vla_suite/policies/policy_config.py
+@@ -24,6 +24,7 @@ def create_trained_policy(
+     sample_kwargs: dict[str, Any] | None = None,
+     default_prompt: str | None = None,
+     norm_stats: dict[str, transforms.NormStats] | None = None,
++    return_alphas: bool = False,
+ ) -> _policy.MME_VLA_Policy:
+     
+     repack_transforms = repack_transforms or transforms.Group()
+@@ -35,13 +36,30 @@ def create_trained_policy(
+         with open(history_config_path, "r") as f:
+             history_config = f.read()
+     
+-    if train_config.model.history_config != history_config:
++    if not history_config_path.exists() and train_config.model.history_config is not None:
++        # SERVE-SAFETY (2026-08-19): a checkpoint dir WITHOUT the
++        # history_config.txt sidecar (e.g. a re-extracted external release)
++        # used to fall through the swap below with history_config=None,
++        # SILENTLY disabling the entire memory stack (use_history=False) and
++        # serving a mem-trained checkpoint as a plain pi05 -- exactly the
++        # cross-era eval collapse diagnosed on the authors' 79999 ckpt.
++        # Keep the CLI-requested config instead and say so loudly. Training
++        # runs always write the sidecar, so they never reach this branch.
++        logging.warning(
++            "history_config.txt not found at %s; KEEPING the requested "
++            "history config %r (previously this silently disabled memory). "
++            "Create the sidecar next to the checkpoint step dir to silence "
++            "this warning.",
++            history_config_path,
++            train_config.model.history_config,
++        )
++    elif train_config.model.history_config != history_config:
+         print(f" == You are using {train_config.model.history_config}, changing to {history_config} ==")
+         train_config = dataclasses.replace(
+-            train_config, 
++            train_config,
+             model=dataclasses.replace(train_config.model, history_config=history_config, use_history=history_config is not None)
+         )
+-    
++
+ 
+     logging.info("Loading model...")
+     model = train_config.model.load(_model.restore_params(checkpoint_dir / "params", dtype=jnp.bfloat16))
+@@ -74,5 +92,6 @@ def create_trained_policy(
+         sample_kwargs=sample_kwargs,
+         metadata=train_config.policy_metadata,
+         norm_stats=norm_stats,
+-        use_quantiles=data_config.use_quantile_norm
++        use_quantiles=data_config.use_quantile_norm,
++        return_alphas=return_alphas,
+     )
 diff --git a/src/mme_vla_suite/training/config.py b/src/mme_vla_suite/training/config.py
-index 254c130..a8109cc 100644
+index 254c130..89ebfdb 100644
 --- a/src/mme_vla_suite/training/config.py
 +++ b/src/mme_vla_suite/training/config.py
 @@ -15,6 +15,7 @@ import tyro
@@ -386,7 +443,7 @@ index 254c130..a8109cc 100644
  
          model_transforms = ModelTransformFactory()(model_config)
          return dataclasses.replace(
-@@ -437,137 +541,1767 @@ class LeRobotMMEVLARealRobotDataConfig(DataConfigFactory):
+@@ -437,137 +541,1867 @@ class LeRobotMMEVLARealRobotDataConfig(DataConfigFactory):
              model_transforms=model_transforms,
          )
  
@@ -906,6 +963,13 @@ index 254c130..a8109cc 100644
 +        actions are absolute joint targets.
 +    """
 +
++    # 2026-09-13 authors'-protocol S1: their pi05_robomemarena is a plain
++    # pi0.5 whose language input IS the current subtask (reference eval:
++    # prompt_for_vla = current_subtask_prompt). True -> the repack feeds the
++    # per-frame segment instruction (simple_subgoal) as "prompt"; the full
++    # task instruction is not seen by the policy.
++    prompt_from_subgoal: bool = False
++
 +    @override
 +    def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
 +        repack_transform = _transforms.Group(
@@ -916,7 +980,7 @@ index 254c130..a8109cc 100644
 +                        "observation/wrist_image": "wrist_image",
 +                        "observation/state": "state",
 +                        "actions": "actions",
-+                        "prompt": "prompt",
++                        "prompt": "simple_subgoal" if self.prompt_from_subgoal else "prompt",
 +                        # ---- New added keys ----
 +                        # perceptual memory
 +                        "static_image_emb": "static_image_emb", # (b, l, d1)
@@ -1134,9 +1198,10 @@ index 254c130..a8109cc 100644
 +            pi05=True, 
 +            action_horizon=20,
 +            use_history=False, 
-+            history_config=None,
-+            discrete_state_input=False,
-+        ),
+             history_config=None,
+             discrete_state_input=False,
+         ),
+-        data=RoboMMEDataConfig(
 +        data=RoboMMEDataConfig(
 +            repo_id=f"robomme",
 +            base_config=DataConfig(prompt_from_task=True),
@@ -1166,10 +1231,9 @@ index 254c130..a8109cc 100644
 +            pi05=True, 
 +            action_horizon=20,
 +            use_history=True, 
-             history_config=None,
-             discrete_state_input=False,
-         ),
--        data=RoboMMEDataConfig(
++            history_config=None,
++            discrete_state_input=False,
++        ),
 +        data=RoboMMEDataConfig(
 +            repo_id=f"robomme",
 +            base_config=DataConfig(prompt_from_task=True),
@@ -2246,28 +2310,30 @@ index 254c130..a8109cc 100644
 +            discrete_state_input=False,
 +        ),
 +        data=RoboMMEForesightDataConfig(
-             repo_id=f"robomme",
++            repo_id=f"robomme",
 +            # reuse the pi05_baseline norm stats (identical data, identical stats)
 +            assets=AssetsConfig(assets_dir="runs/assets/pi05_baseline"),
-             base_config=DataConfig(prompt_from_task=True),
-         ),
--        batch_size=128,
++            base_config=DataConfig(prompt_from_task=True),
++        ),
 +        batch_size=64,
-         lr_schedule=_optimizer.CosineDecaySchedule(
-             warmup_steps=10_000,
-             peak_lr=5e-5,
-@@ -579,24 +2313,883 @@ _CONFIGS = [
-         weight_loader=weight_loaders.CheckpointWeightLoader(
-             os.path.join(OPENPI_DATA_HOME, "openpi-assets/checkpoints/pi05_base/params"),
-         ),
--        num_train_steps=80_000, 
++        lr_schedule=_optimizer.CosineDecaySchedule(
++            warmup_steps=10_000,
++            peak_lr=5e-5,
++            decay_steps=100_000,
++            decay_lr=5e-5,
++        ),
++        optimizer=_optimizer.AdamW(clip_gradient_norm=1.0),
++        freeze_filter=history_pi0.HistoryPi0Config().get_freeze_filter(),
++        weight_loader=weight_loaders.CheckpointWeightLoader(
++            os.path.join(OPENPI_DATA_HOME, "openpi-assets/checkpoints/pi05_base/params"),
++        ),
 +        num_train_steps=80_000,
-         save_interval=10_000,
-         keep_period=10_000,
-         num_workers=4,
-         ema_decay=0.999,
-         fsdp_devices=4,
-     ),
++        save_interval=10_000,
++        keep_period=10_000,
++        num_workers=4,
++        ema_decay=0.999,
++        fsdp_devices=4,
++    ),
 +    # ---- [FRS] DETACHED-CE-IN-M_T (2026-08-18): mme_frs_modh_ce =
 +    # mme_frs_modh_sg VERBATIM (its baseline, running on 4,7); the ONE
 +    # factor is the detached-CE-token block in the yaml. One learned token
@@ -2281,14 +2347,11 @@ index 254c130..a8109cc 100644
 +    # feed the CE row -- already the detached channel). Grounded data
 +    # config for the coord labels; recipe verbatim. Do NOT launch until
 +    # called (target: cards 5,6 on the off_mod@40k verdict).
-     TrainConfig(
--        name="mme_vla_suite",
++    TrainConfig(
 +        name="mme_frs_modh_ce",
-         model=history_pi0.HistoryPi0Config(
--            pi05=True, 
++        model=history_pi0.HistoryPi0Config(
 +            pi05=True,
-             action_horizon=20,
--            use_history=True, 
++            action_horizon=20,
 +            use_history=True,
 +            history_config="perceptual-framesamp-context-frs-off-modh-ce.yaml",
 +            discrete_state_input=False,
@@ -2340,30 +2403,28 @@ index 254c130..a8109cc 100644
 +            discrete_state_input=False,
 +        ),
 +        data=RoboMMEForesightDataConfig(
-+            repo_id=f"robomme",
+             repo_id=f"robomme",
 +            # reuse the pi05_baseline norm stats (identical data, identical stats)
 +            assets=AssetsConfig(assets_dir="runs/assets/pi05_baseline"),
-+            base_config=DataConfig(prompt_from_task=True),
-+        ),
+             base_config=DataConfig(prompt_from_task=True),
+         ),
+-        batch_size=128,
 +        batch_size=64,
-+        lr_schedule=_optimizer.CosineDecaySchedule(
-+            warmup_steps=10_000,
-+            peak_lr=5e-5,
-+            decay_steps=100_000,
-+            decay_lr=5e-5,
-+        ),
-+        optimizer=_optimizer.AdamW(clip_gradient_norm=1.0),
-+        freeze_filter=history_pi0.HistoryPi0Config().get_freeze_filter(),
-+        weight_loader=weight_loaders.CheckpointWeightLoader(
-+            os.path.join(OPENPI_DATA_HOME, "openpi-assets/checkpoints/pi05_base/params"),
-+        ),
+         lr_schedule=_optimizer.CosineDecaySchedule(
+             warmup_steps=10_000,
+             peak_lr=5e-5,
+@@ -579,24 +2413,925 @@ _CONFIGS = [
+         weight_loader=weight_loaders.CheckpointWeightLoader(
+             os.path.join(OPENPI_DATA_HOME, "openpi-assets/checkpoints/pi05_base/params"),
+         ),
+-        num_train_steps=80_000, 
 +        num_train_steps=80_000,
-+        save_interval=10_000,
-+        keep_period=10_000,
-+        num_workers=4,
-+        ema_decay=0.999,
-+        fsdp_devices=4,
-+    ),
+         save_interval=10_000,
+         keep_period=10_000,
+         num_workers=4,
+         ema_decay=0.999,
+         fsdp_devices=4,
+     ),
 +    # ---- PORTABLE GATE arms 2+3: TokenDrop+Modulation and RMT+Modulation,
 +    # gated/ungated pairs. Same MemModGate (integration-site hook), same
 +    # verbatim recipe; only the variant yaml differs. Launch after the arm-1
@@ -2461,11 +2522,14 @@ index 254c130..a8109cc 100644
 +    # 20, warmup 10k -> constant lr 5e-5, AdamW b2=0.95 wd~0 clip 1.0, EMA
 +    # 0.999, frozen SigLIP ViT, 80k steps, save/keep 10k, batch 64 as for all
 +    # history variants). Only the memory representation/integration is new.
-+    TrainConfig(
+     TrainConfig(
+-        name="mme_vla_suite",
 +        name="mme_gateC",
-+        model=history_pi0.HistoryPi0Config(
+         model=history_pi0.HistoryPi0Config(
+-            pi05=True, 
 +            pi05=True,
-+            action_horizon=20,
+             action_horizon=20,
+-            use_history=True, 
 +            use_history=True,
 +            history_config="event-bank-attnres3.yaml",
 +            discrete_state_input=False,
@@ -2676,7 +2740,7 @@ index 254c130..a8109cc 100644
 +        num_workers=4,
 +        ema_decay=0.999,
 +        fsdp_devices=1,
-+        dataset_path="/archive/athena_home_tmp/rmbench_work/rmbench_preprocessed_data",
++        dataset_path="${DATA_ROOT}/rmbench_work/rmbench_preprocessed_data",
 +    ),
 +    # ---- Vanilla pi0.5 on RoboMemArena (baseline reproduction) -------------
 +    # 2026-08-05: reproduces the benchmark authors' pi0.5 baseline in our
@@ -2749,7 +2813,7 @@ index 254c130..a8109cc 100644
 +            num_workers=4,
 +            ema_decay=0.999,
 +            fsdp_devices=1,
-+            dataset_path=f"/archive/athena_home_tmp/mikasa_work/per_task/{env}",
++            dataset_path=f"${DATA_ROOT}/mikasa_work/per_task/{env}",
 +        )
 +        # IDENTICAL budget on all five arms, so a difference in the 5-task table
 +        # reflects the TASK and not how long its arm trained.  Their 21 epochs
@@ -2854,7 +2918,7 @@ index 254c130..a8109cc 100644
 +            num_workers=4,
 +            ema_decay=0.999,
 +            fsdp_devices=1,
-+            dataset_path=f"/archive/athena_home_tmp/mikasa_work/per_task_official/{env}",
++            dataset_path=f"${DATA_ROOT}/mikasa_work/per_task_official/{env}",
 +        )
 +        for short, env, steps, save_iv in [
 +            ("sgt", "ShellGameTouch-v0",  60_000, 15_000),  # already trained
@@ -2939,7 +3003,7 @@ index 254c130..a8109cc 100644
 +        ema_decay=0.999,
 +        fsdp_devices=1,
 +        seed=42,
-+        dataset_path="/archive/athena_home_tmp/libero_work/libero_mem_preprocessed",
++        dataset_path="${DATA_ROOT}/libero_work/libero_mem_preprocessed",
 +    ),
 +    # ---- LIBERO-MEM memoryless CONTROL ---------------------------------
 +    # 2026-09-02.  Discriminating experiment for the closed-loop collapse:
@@ -2987,7 +3051,7 @@ index 254c130..a8109cc 100644
 +        ema_decay=0.999,
 +        fsdp_devices=1,
 +        seed=42,
-+        dataset_path="/archive/athena_home_tmp/libero_work/libero_mem_preprocessed",
++        dataset_path="${DATA_ROOT}/libero_work/libero_mem_preprocessed",
 +    ),
 +    TrainConfig(
 +        name="rmbench_dualgate_3v",
@@ -3021,7 +3085,7 @@ index 254c130..a8109cc 100644
 +        num_workers=4,
 +        ema_decay=0.999,
 +        fsdp_devices=1,
-+        dataset_path="/archive/athena_home_tmp/rmbench_work/rmbench_preprocessed_data",
++        dataset_path="${DATA_ROOT}/rmbench_work/rmbench_preprocessed_data",
 +    ),
 +    # ---- Vanilla pi0.5 on RoboMemArena (baseline reproduction) -------------
 +    # 2026-08-05: reproduces the benchmark authors' pi0.5 baseline in our
@@ -3039,9 +3103,9 @@ index 254c130..a8109cc 100644
 +            pi05=True,
 +            action_horizon=10,
 +            use_history=False,
-             history_config=None,
-             discrete_state_input=False,
-         ),
++            history_config=None,
++            discrete_state_input=False,
++        ),
 +        data=RMADataConfig(
 +            repo_id="rma",
 +            assets=AssetsConfig(assets_dir="runs/assets/rma_base"),
@@ -3065,6 +3129,141 @@ index 254c130..a8109cc 100644
 +        num_workers=4,
 +        ema_decay=0.999,
 +        fsdp_devices=2,
++        dataset_path="data/rma_preprocessed_data",
++    ),
++    # ---- THEIR S1, literally (2026-09-13): rma_pi05 recipe + prompt := subtask ----
++    # Same TrainConfig as rma_pi05 (their bundled pi05_robomemarena: horizon
++    # 10 = the harness replan window, batch 128 as micro-64 x accum 2, 40k
++    # updates, warmup 10k, constant 5e-5, EMA 0.999, pi05_base init, no
++    # history) with ONE change: prompt_from_subgoal=True, so the policy's
++    # language input is the current subtask text, as in their reference eval
++    # (prompt_for_vla = current_subtask_prompt) and their subtask_data/
++    # training split. Reproduction target: RMA Table 2 "Ground Truth" 46.1
++    # TSR / 64.8 CSR, evaluated with the oracle subtask sent AS the prompt
++    # (adapter prompt_from_subgoal=1). Launch: STEPS=40000 ACCUM_UP=2 FSDP=4;
++    # final ckpt id 79999.
++    TrainConfig(
++        name="rma_pi05_sgprompt",
++        model=history_pi0.HistoryPi0Config(
++            pi05=True,
++            action_horizon=10,
++            use_history=False,
++            history_config=None,
++            discrete_state_input=False,
++        ),
++        data=RMADataConfig(
++            repo_id="rma",
++            assets=AssetsConfig(assets_dir="runs/assets/rma_base"),
++            base_config=DataConfig(prompt_from_task=True),
++            prompt_from_subgoal=True,
++        ),
++        batch_size=64,
++        lr_schedule=_optimizer.CosineDecaySchedule(
++            warmup_steps=10_000,
++            peak_lr=5e-5,
++            decay_steps=100_000,
++            decay_lr=5e-5,
++        ),
++        optimizer=_optimizer.AdamW(clip_gradient_norm=1.0),
++        freeze_filter=history_pi0.HistoryPi0Config().get_freeze_filter(),
++        weight_loader=weight_loaders.CheckpointWeightLoader(
++            os.path.join(OPENPI_DATA_HOME, "openpi-assets/checkpoints/pi05_base/params"),
++        ),
++        num_train_steps=80_000,
++        save_interval=20_000,
++        keep_period=20_000,
++        num_workers=16,
++        ema_decay=0.999,
++        fsdp_devices=4,
++        dataset_path="data/rma_preprocessed_data",
++    ),
++    # ---- THE AUTHORS' PUBLISHED pi0.5 (2026-09-14): serve-only config -------
++    # huashuolei/PrediMem revision e645741 `vla_alltask` (their runner binds it
++    # as VLA_CKPT for pi05_robomemarena). Same architecture as rma_pi05
++    # (Pi0Config(pi05=True, action_horizon=10), no history); norm stats ship
++    # inside the checkpoint under assets/policy_assets, hence the asset_id.
++    # Their eval feeds their primitive_order labels as the prompt, so pair
++    # with RMA_PROMPT_FROM_SUBGOAL=1 + RMA_PLAN_LABELS=rma_their_labels.json.
++    # NOT for training (dataset_path/data fields are inherited placeholders).
++    TrainConfig(
++        name="rma_pi05_theirs",
++        model=history_pi0.HistoryPi0Config(
++            pi05=True,
++            action_horizon=10,
++            use_history=False,
+             history_config=None,
+             discrete_state_input=False,
+         ),
++        data=RMADataConfig(
++            repo_id="rma",
++            assets=AssetsConfig(asset_id="policy_assets"),
++            base_config=DataConfig(prompt_from_task=True),
++            prompt_from_subgoal=True,
++        ),
++        batch_size=64,
++        lr_schedule=_optimizer.CosineDecaySchedule(
++            warmup_steps=10_000,
++            peak_lr=5e-5,
++            decay_steps=100_000,
++            decay_lr=5e-5,
++        ),
++        optimizer=_optimizer.AdamW(clip_gradient_norm=1.0),
++        freeze_filter=history_pi0.HistoryPi0Config().get_freeze_filter(),
++        weight_loader=weight_loaders.CheckpointWeightLoader(
++            os.path.join(OPENPI_DATA_HOME, "openpi-assets/checkpoints/pi05_base/params"),
++        ),
++        num_train_steps=80_000,
++        save_interval=20_000,
++        keep_period=20_000,
++        num_workers=16,
++        ema_decay=0.999,
++        fsdp_devices=4,
++        dataset_path="data/rma_preprocessed_data",
++    ),
++    # ---- S1 at STRICT parity with the authors' pipeline (2026-09-12) --------
++    # rma_pi05's recipe verbatim (their bundled pi05_robomemarena: action
++    # horizon 10 = the harness's replan window, so the whole predicted chunk
++    # is executed; batch 128 as micro-64 x accum 2; 40k updates; warmup 10k;
++    # constant 5e-5; EMA 0.999; pi05_base init) plus ONLY the symbolic
++    # simple_subgoal conditioning (their ungrounded per-segment subtask
++    # text, no coordinates). Reproduction target: RMA Table 2 "Ground
++    # Truth" = S1 fed GT subtasks, 46.1 TSR / 64.8 CSR. rma_simple_sg above
++    # is the same conditioning on our memory-arm recipe (horizon 20, batch
++    # 64, 60k) and is kept for arm-to-arm comparisons only.
++    # Launch: STEPS=40000 ACCUM_UP=2 FSDP=4 (the launcher's ACCUM_UP path
++    # drops --num-workers, hence num_workers here); final ckpt id 79999.
++    TrainConfig(
++        name="rma_simple_sg_par",
++        model=history_pi0.HistoryPi0Config(
++            pi05=True,
++            action_horizon=10,
++            use_history=True,
++            history_config="symbolic-simple-subgoal.yaml",
++            discrete_state_input=False,
++        ),
++        data=RMADataConfig(
++            repo_id="rma",
++            assets=AssetsConfig(assets_dir="runs/assets/rma_base"),
++            base_config=DataConfig(prompt_from_task=True),
++        ),
++        batch_size=64,
++        lr_schedule=_optimizer.CosineDecaySchedule(
++            warmup_steps=10_000,
++            peak_lr=5e-5,
++            decay_steps=100_000,
++            decay_lr=5e-5,
++        ),
++        optimizer=_optimizer.AdamW(clip_gradient_norm=1.0),
++        freeze_filter=history_pi0.HistoryPi0Config().get_freeze_filter(),
++        weight_loader=weight_loaders.CheckpointWeightLoader(
++            os.path.join(OPENPI_DATA_HOME, "openpi-assets/checkpoints/pi05_base/params"),
++        ),
++        num_train_steps=80_000,
++        save_interval=20_000,
++        keep_period=20_000,
++        num_workers=16,
++        ema_decay=0.999,
++        fsdp_devices=4,
 +        dataset_path="data/rma_preprocessed_data",
 +    ),
 +    # ---- MEMORY-ONLY continued training (instinct-protection arm) ----------
@@ -3144,7 +3343,7 @@ index 254c130..a8109cc 100644
              base_config=DataConfig(prompt_from_task=True),
          ),
          batch_size=64,
-@@ -611,12 +3204,18 @@ _CONFIGS = [
+@@ -611,12 +3346,18 @@ _CONFIGS = [
          weight_loader=weight_loaders.CheckpointWeightLoader(
              os.path.join(OPENPI_DATA_HOME, "openpi-assets/checkpoints/pi05_base/params"),
          ),
@@ -3542,7 +3741,7 @@ index f1f8730..2c9188e 100644
 +            if self.foresight_gate_label:
 +                _emap2 = str(history_config.get(
 +                    "foresight_episode_map",
-+                    "/home/yl817/belief_vla_migration/robomme_setup/labels/lerobot_episode_map.json",
++                    "/home/user/belief_vla_migration/robomme_setup/labels/lerobot_episode_map.json",
 +                ))
 +                with open(_emap2) as _f:
 +                    _blocks2 = json.load(_f)["blocks"]
@@ -3560,7 +3759,7 @@ index f1f8730..2c9188e 100644
 +            if self.foresight_unpred_mask:
 +                _emap = str(history_config.get(
 +                    "foresight_episode_map",
-+                    "/home/yl817/belief_vla_migration/robomme_setup/labels/lerobot_episode_map.json",
++                    "/home/user/belief_vla_migration/robomme_setup/labels/lerobot_episode_map.json",
 +                ))
 +                with open(_emap) as f:
 +                    _blocks = json.load(f)["blocks"]
@@ -3586,7 +3785,7 @@ index f1f8730..2c9188e 100644
 +                ))
 +                emap_path = str(history_config.get(
 +                    "foresight_episode_map",
-+                    "/home/yl817/belief_vla_migration/robomme_setup/labels/"
++                    "/home/user/belief_vla_migration/robomme_setup/labels/"
 +                    "lerobot_episode_map.json",
 +                ))
 +                vocab_path = str(history_config.get(

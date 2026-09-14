@@ -1,0 +1,202 @@
+{
+ "1": [
+  "pick cookies",
+  "place cookies into basket",
+  "pick tomato sauce",
+  "place tomato into basket"
+ ],
+ "2": [
+  "pick butter",
+  "place butter into basket",
+  "pick popcorn",
+  "place popcorn into basket"
+ ],
+ "3": [
+  "pick cream",
+  "place cream into basket",
+  "pick pudding",
+  "place pudding into basket"
+ ],
+ "4": [
+  "open top drawer",
+  "close the top drawer",
+  "open middle drawer",
+  "close middle drawer",
+  "open bottom drawer",
+  "close bottom drawer",
+  "open top drawer again",
+  "place butter into top drawer",
+  "close top drawer final"
+ ],
+ "5": [
+  "open top drawer",
+  "close top drawer",
+  "open middle drawer",
+  "close middle drawer",
+  "open bottom drawer",
+  "close bottom drawer",
+  "open middle drawer again",
+  "place butter into middle drawer",
+  "close middle drawer final"
+ ],
+ "6": [
+  "pick tomato sauce",
+  "pour tomato sauce over cookies 1st",
+  "pour tomato sauce over cookies 2nd",
+  "place tomato sauce bowl drainer"
+ ],
+ "7": [
+  "pick tomato sauce",
+  "pour tomato sauce into frypan 1st",
+  "pour tomato sauce into frypan 2nd",
+  "place tomato sauce bowl drainer"
+ ],
+ "8": [
+  "pick chocolate",
+  "place chocolate in frypan",
+  "pick tomato sauce",
+  "pour tomato sauce over chocolate 1st",
+  "pour tomato sauce over chocolate 2nd",
+  "place tomato sauce bowl drainer"
+ ],
+ "9": [
+  "pick butter",
+  "place butter in frypan",
+  "pick tomato sauce",
+  "pour tomato sauce over butter 1st",
+  "pour tomato sauce over butter 2nd",
+  "place tomato sauce bowl drainer"
+ ],
+ "10": [
+  "pick wine bottle",
+  "pour wine into mug 1st",
+  "pour wine into mug 2nd",
+  "place wine bottle on table"
+ ],
+ "11": [
+  "open top drawer",
+  "pick cookies",
+  "place cookies",
+  "close top drawer",
+  "open middle drawer",
+  "pick chocolate",
+  "place chocolate",
+  "close middle drawer"
+ ],
+ "12": [
+  "open middle drawer",
+  "pick cookies",
+  "place cookies",
+  "pick chocolate",
+  "place chocolate",
+  "close middle drawer"
+ ],
+ "13": [
+  "open middle drawer",
+  "pick cookies",
+  "place cookies",
+  "pick butter",
+  "place butter",
+  "close middle drawer"
+ ],
+ "14": [
+  "open top drawer",
+  "pick cookies",
+  "place cookies in top drawer",
+  "close top drawer",
+  "open middle drawer",
+  "pick chocolate",
+  "place chocolate in middle drawer",
+  "close middle drawer"
+ ],
+ "15": [
+  "pick butter",
+  "place butter in frypan",
+  "pick milk",
+  "pour milk in frypan 1st",
+  "pour milk in frypan 2nd",
+  "place milk on table"
+ ],
+ "16": [
+  "pick milk",
+  "pour milk into red coffee mug 1st",
+  "pour milk into red coffee mug 2nd",
+  "place milk bowl drainer"
+ ],
+ "17": [
+  "open middle drawer",
+  "pick butter",
+  "place butter",
+  "pick chocolate",
+  "place chocolate",
+  "close middle drawer"
+ ],
+ "18": [
+  "pick chocolate",
+  "place chocolate cabinet2",
+  "pick butter",
+  "place butter cabinet2"
+ ],
+ "19": [
+  "pick tomato sauce",
+  "place tomato sauce cabinet2",
+  "pick milk",
+  "place milk cabinet2",
+  "pick orange juice",
+  "place orange juice cabinet2"
+ ],
+ "20": [
+  "open microwave",
+  "pick cookies",
+  "place cookies",
+  "pick chocolate",
+  "place chocolate",
+  "close microwave"
+ ],
+ "21": [
+  "open microwave",
+  "pick butter",
+  "place butter",
+  "pick chocolate",
+  "place chocolate",
+  "close microwave"
+ ],
+ "22": [
+  "pick tomato",
+  "pour first",
+  "pour second",
+  "place tomato aside",
+  "open microwave",
+  "pick cookies",
+  "place cookies",
+  "close microwave"
+ ],
+ "23": [
+  "open microwave",
+  "pick cream",
+  "place cream",
+  "pick popcorn",
+  "place popcorn",
+  "close microwave"
+ ],
+ "24": [
+  "open microwave",
+  "pick cookies",
+  "place cookies",
+  "pick popcorn",
+  "place popcorn",
+  "close microwave"
+ ],
+ "25": [
+  "pick butter",
+  "place butter plate2",
+  "pick cream cheese",
+  "place cream cheese plate2"
+ ],
+ "26": [
+  "pick chocolate pudding",
+  "place chocolate pudding plate2",
+  "pick cream cheese",
+  "place cream cheese plate2"
+ ]
+}

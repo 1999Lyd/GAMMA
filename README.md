@@ -10,8 +10,10 @@ defers, corrects or rejects it against mechanical visual evidence, at corpus
 construction and at deployment alike.
 
 On the sixteen RoboMME memory tasks GAMMA reaches 66.0 % success with the
-policy held fixed (79 % of the privileged oracle ceiling, 84.1 %). Trained
-weights are distributed separately, see [CHECKPOINTS.md](CHECKPOINTS.md).
+policy held fixed (79 % of the privileged oracle ceiling, 84.1 %; 57.4 % with
+0.8B agents), and it transfers with its contracts unchanged to RoboMemArena
+(38.7 % task / 58.6 % subtask success on held-out layouts). Trained weights are
+distributed separately, see [CHECKPOINTS.md](CHECKPOINTS.md).
 
 ```
 memory (frames) --> grounded symbolic subgoal --> action chunk
@@ -38,10 +40,27 @@ the numbers reported by [RoboMME](https://github.com/RoboMME/robomme_policy_lear
 | MemER-style keyframe pipeline | VLM keyframe selection | 42.4 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
 | GroundSG+QwenVL (single VLM) | raw frames | 32.7 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
 | **GAMMA (ours)** | verified grounded text + harness | **66.0** | [GAMMA_checkpoints.zip](CHECKPOINTS.md) — Drive link **TBD** |
+| GAMMA (ours), 0.8B agents | same, Qwen3.5-0.8B agents | 57.4 | [GAMMA_checkpoints.zip](CHECKPOINTS.md) |
 | GroundSG+Oracle (privileged ceiling) | oracle subgoals | 84.1 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
 
 Harness ablation (one verdict disabled at a time): w/o DEFER 62.7, w/o REJECT 55.1,
-w/o CORRECT 65.0.
+w/o CORRECT 65.0; no harness 51.2 (9B) and 32.3 (0.8B, vs 57.4 with it).
+
+### RoboMemArena (26 tasks, held-out layouts, 50 episodes per task)
+
+Task / subtask success (%), families as in the benchmark's Table 2. Baseline and
+privileged rows are the numbers reported by [RoboMemArena](https://github.com/OpenHelix-Team/RoboMemArena)
+under its own protocol; GAMMA and the privileged feed rows under our protocol are
+measured on seeds 50–99 (disjoint from the demonstration seeds).
+
+| row | Transferring | Occlusion | Counting | Sequence | Average |
+|---|---|---|---|---|---|
+| π0.5 (no subgoals), reported | 20.0 / 42.8 | 12.7 / 17.2 | 14.3 / 50.9 | 60.0 / 71.6 | 21.5 / 38.7 |
+| MemER, reported | 20.0 / 36.1 | 16.4 / 33.2 | 27.1 / 65.1 | 65.0 / 79.1 | 27.3 / 49.1 |
+| PrediMem (benchmark authors), reported | 22.5 / 45.2 | 27.3 / 38.4 | 45.7 / 69.3 | 72.5 / 89.5 | 38.5 / 55.2 |
+| π0.5 executor, plan fed on benchmark stage predicates (privileged, ours) | 3.5 / 23.6 | 2.4 / 40.7 | 11.4 / 36.5 | 35.0 / 68.1 | 10.0 / 41.1 |
+| **GAMMA (ours)** | 27.5 / 37.3 | 18.9 / 49.2 | 52.0 / 67.2 | 81.0 / 90.7 | **38.7 / 58.6** |
+| ground-truth subtask feed (privileged), reported | 32.5 / 54.8 | 33.6 / 49.8 | 51.4 / 75.6 | 85.0 / 92.3 | 46.1 / 64.8 |
 
 <details>
 <summary>Per-task numbers</summary>
@@ -71,7 +90,7 @@ MC MoveCube, IP InsertPeg, PL PatternLock, RS RouteStick.
 | `eval/` | closed-loop evaluation on RoboMME: the subgoal-predictor client, lane launchers, the diagnostic runs of the single-VLM baselines, and our patches to the benchmark's policy-learning repo |
 | `analysis/` | trace aggregation, tick-level diagnosis, failure annotation videos |
 | `figures/` | scripts that render the paper's figures from logged traces |
-| `rma/` | the RoboMemArena port: frame extraction, camera calibration, grounded-subgoal patching of the policy dataset, SAM-3 prompt probes, the oracle-fed evaluation stack and the policy config |
+| `rma/` | the RoboMemArena port: frame extraction, camera calibration, the RMA corpus generator and writer SFT, the RMA agent server (harness with proprioceptive predicates), SAM-3 prompt tuning, the evaluation stack (oracle feeds, GAMMA closed loop, lane launchers with crash resume) and the policy configs |
 | `docs/` | design documents for the RMA port |
 
 All machine-specific locations are read from environment variables. Copy
@@ -128,6 +147,20 @@ The RoboMemArena stack has its own environment; see
    columns and the online subgoal column).
 
 ## Pipeline
+
+The eight stages from raw episodes to the paper's tables, and where each lives:
+
+| stage | what | entry point |
+|---|---|---|
+| 1 | detection cache (SAM-3 on the writer's frame grid) | `corpus/sam3_precompute.py` |
+| 2 | verified writer / reasoner targets + corpus audits | `corpus/gen_wam_sft_v12.py`, `corpus/audit_derivable.py`, `corpus/verify_alignment.py` |
+| 3 | writer (Agent-1) LoRA finetuning | `train/train_agent1.sh` (0.8B: `train/train_agent1_0p8b.sh`) |
+| 4 | writer rollout → reasoner corpus | `corpus/rollout_agent1.py`, `corpus/snap_agent2_targets.py` |
+| 5 | reasoner (Agent-2) finetuning + open-loop check | `train/train_agent2.sh`, `train/eval_agent2.py` |
+| 6 | serving: agent server with the propose–verify harness | `serve/wam_agent_server.py` |
+| 7 | closed-loop evaluation lanes (seeds 7, 8, 9; 30 episodes/task) | `eval/eval_lane_9b.sh`, `eval/eval_lane_0p8b.sh`, `eval/eval_wam_parallel.sh` |
+| 8 | analysis, tick-level diagnosis, figures and paper tables | `analysis/`, `figures/`, `analysis/update_0p8b_paper.py`, `analysis/make_rma_tables.py` |
+
 
 The end-to-end sequence used for the paper's checkpoints is
 `train/pipeline_chain_v17.sh`; the steps are described below so they can be run
@@ -283,33 +316,71 @@ which talks to the agent server; the benchmark's scoring loop is untouched.
 
 ## RoboMemArena port (`rma/`)
 
-Nothing in GAMMA binds to RoboMME: the contracts assume a detector, a tick grid
-and recorded episodes. The port changes two geometry constants (tick 10 steps,
-3 frames per window) and the detector prompts. What is included:
+Nothing in GAMMA binds to RoboMME: the contracts assume a detector, a tick grid,
+recorded episodes and an evidence stream to verify claims against. The port
+changed two geometry constants (tick 10 steps, 3 frames per window), the detector
+prompts, and the harness's evidence predicates, which on this benchmark read the
+executor's proprioceptive state (`rma/rma_progress_predicates.py`: pick = fingers
+stalled inside the object's grasp band then the hand rises 3 cm; place = carry then
+release; pour = wrist rotated ≥ 25° from the carry orientation and back; open /
+close = handle grasp and stroke). Grasp bands come from the recorded episodes
+(`rma/grasp_widths.py` → `rma/grasp_widths.json`); on the recordings the predicates
+fire inside their own segment in 879 of 888 cases (`rma/predicate_audit.json`).
 
-* `rma/extract_rma_frames.py`: episode reconstruction from the per-subtask HDF5
-  files onto the writer's frame grid, with continuity verification.
-* `rma/get_rma_camera.py`, `rma/rma_agentview_camera.json`: the fixed agentview
-  projection used to ground subgoals kinematically.
-* `rma/patch_grounded_subgoals.py`, `rma/verify_grounded_coords.py`: the grounded
-  subgoal stream for the RMA policy dataset (coordinate = gripper position at the
-  segment's interaction anchor, place segments re-anchored at the measured release
-  step) and its verification report (`docs/RMA_GROUNDED_COORD_REPORT.md`).
-* `rma/policy/`: the policy config (`symbolic-grounded-subgoal.yaml`, TrainConfig
-  `rma_ground_sg` in `policy_training_config.patch`), the RMA data transforms and
-  dataset builder for the benchmark's policy-learning code.
-* `rma/eval_stack/`: the closed-loop evaluation stack around the official
-  RoboMemArena benchmark (fixed protocol: seeds 50–99, 50 trials/task) with an
-  **oracle-fed** runner (`run_rma_oracle_eval.py`, `rma_oracle_subgoal.py`) that
-  feeds the subgoal-conditioned policy the grounded subgoal stream from simulator
-  state, advancing exactly when the benchmark's own stage predicates register
-  each subtask. This is the RMA analogue of the privileged ceiling row.
-  `RMA_ORACLE=1 bash run_rma_eval.sh <cfg> <exp> <ckpt> <server_gpu_uuid> <client_gpu_uuid>`.
-* `rma/probe_sam3_rma.py`, `rma/prompts_rma_draft.json`: the SAM-3 prompt
-  tuning probe for the RMA object vocabulary.
+Steps (all under `source env.sh`; the benchmark repo is expected at
+`RMA_BENCH_ROOT`, the released demonstrations at `RMA_DATA_ROOT`):
 
-`docs/RMA_SPEC_AND_PLAN.md` and `docs/RMA_TASK_DOSSIER.md` are the working
-specification of the port.
+1. **Executor.** Build the policy dataset and train the benchmark authors' π0.5
+   recipe with the subtask text as prompt (config `rma_pi05_sgprompt` in
+   `eval/benchmark_patches/policy_training_config.patch`; launcher
+   `rma/policy/launch_gate_train.sh` with `STEPS=40000 ACCUM_UP=2 FSDP=4`):
+   `$GAMMA_PY rma/policy/build_rma_dataset.py`, then
+   `STEPS=40000 ACCUM_UP=2 FSDP=4 bash rma/policy/launch_gate_train.sh rma_pi05_sgprompt rma_pi05_sgprompt_v1 4,5,6,7`.
+   The final checkpoint id is 79999. `rma/download_released_pi05.py` fetches the
+   authors' released checkpoint (config `rma_pi05_theirs`) for the same-protocol rows.
+2. **Frames and detections.** `rma/extract_rma_frames.py` reconstructs episodes
+   onto the writer's grid; `PROMPTS=rma/prompts_rma.json $MSSWIFT_PY rma/sam3_precompute_rma.py`
+   caches SAM-3 detections (prompt tuning: `rma/tune_prompts_rma.py`).
+3. **Corpus and writer.** `OUT=$F $GAMMA_PY rma/build_rma_corpus.py` (tick 10, three
+   frames per window, a proprioceptive state readout per frame, NONE ratio 3, seeds
+   100–131 train / 132–139 validation), `SRC=$F $GAMMA_PY rma/make_agent1_swift_rma.py`,
+   `bash rma/train_agent1_rma.sh <gpu>` (LoRA r16, one epoch). `rma/chain_rma_corpus_sft.sh`
+   chains the three. `rma/seg_boundary_states.py` reproduces the segment-boundary
+   measurements of the paper's appendix (hand-off timing).
+4. **Serving.** `rma/rma_agent_server.py` is the RMA agent server: `/reset` takes the
+   instruction and the fixed per-task plan (`rma/eval_stack/rma_oracle_plans.json`),
+   `/tick` takes three frames with their states and returns the current subtask after
+   the harness. Switches: `WAM_A1_OFF=1` (harness-only: progress claims raised by the
+   predicates and admitted after `AUTO_GRACE=2` ticks; the paper's reported
+   configuration), `A1_CKPT`/`WAM_BASE` (writer-driven variant; `WAM_SETTLE_TICKS`
+   applies the same two-tick settle rule to writer claims), `WAM_HARNESS_OFF=1`,
+   `WAM_SAM_OFF=1`, `WAM_VERIFY_VISION`, `REFUTE_TICKS`, `DET_THR`, `WAM_TRACE`.
+5. **Closed-loop evaluation** (`rma/eval_stack/`, protocol: seeds 50–99, 50
+   episodes per task, 10 actions per policy call, 2,500 steps):
+   * `run_rma_eval.sh <cfg> <exp> <ckpt> <server_gpu> <client_gpu>` starts the policy
+     server and the benchmark client; `RMA_ORACLE=1` feeds the plan on the benchmark's
+     own stage predicates (`rma_oracle_subgoal.py`; `RMA_ORACLE_GATE=1|2` adds the
+     segment-completion gates), `RMA_GAMMA=1 RMA_AGENT_PORT=<port>` runs GAMMA
+     (`run_rma_gamma_eval.py`, `rma_gamma_provider.py`), `RMA_PROMPT_FROM_SUBGOAL=1`
+     sends the subtask text as the policy prompt (the authors' protocol),
+     `RMA_PLAN_LABELS=rma_their_labels.json` emits the authors' primitive labels
+     (needed with their released checkpoint), `RMA_DIAG_TRAIN_SEEDS=100` is the
+     labelled diagnostic on the authors' default (training-layout) seeds.
+   * `chain_rma_gamma_probe.sh <ckpt> <L1|L2|L2c> [trials] [tag]` runs one GAMMA lane
+     (own agent server + policy server + client; `CFG_OVERRIDE`/`CKPT_OVERRIDE`
+     for the released checkpoint); `launch_gamma_final50h.sh` is the six-lane
+     50-episode run behind the paper's GAMMA row, `chain_rma_oracle_final6.sh` the
+     stage-predicate feed row, `launch_theirs50u.sh` the released-checkpoint row.
+   * `rma_lane_retry.sh` wraps a lane and resumes from the first missing task after
+     a client crash (the benchmark's EGL renderer aborts intermittently).
+6. **Tables.** `analysis/make_rma_tables.py` regenerates the paper's RoboMemArena
+   section and both tables from the lane outputs; `analysis/apply_rma_section.py`
+   applies them to the manuscript.
+
+`docs/RMA_SPEC_AND_PLAN.md`, `docs/RMA_TASK_DOSSIER.md` and
+`docs/RMA_GROUNDED_COORD_REPORT.md` are the working documents of the port; the
+grounded-subgoal executor variants they describe (`rma_ground_sg`) are earlier
+arms and are not the paper's configuration.
 
 ## Citation
 

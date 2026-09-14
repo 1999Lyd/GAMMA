@@ -12,6 +12,8 @@ TASKS_laneW=BinFill,PickXtimes,ButtonUnmask,ButtonUnmaskSwap
 TASKS_laneX=VideoUnmask,VideoRepick,MoveCube,PatternLock
 TASKS_laneY=StopCube,SwingXtimes,PickHighlight,VideoUnmaskSwap
 TASKS_laneZ=VideoPlaceButton,VideoPlaceOrder,InsertPeg,RouteStick
+TASKS_laneV=VideoPlaceOrder
+TASKS_laneR=VideoRepick
 O=${ROBOMME_ROOT}
 S7=${GAMMA_WORK}
 P17=${GAMMA_ROOT}/serve
@@ -19,6 +21,8 @@ CLIENT_PY=${CLIENT_PY}
 MSPY=${MSSWIFT_PY}
 L=${GAMMA_LOGS}
 eval "TASKS=\$TASKS_${LANE}"
+# TASKS_OVERRIDE trims the lane list (parity with eval_0p8b_lane.sh / eval_9b_lane.sh)
+[ -n "${TASKS_OVERRIDE:-}" ] && TASKS=$TASKS_OVERRIDE
 
 find_free_port(){ for i in $(seq 1 500); do p=$(shuf -i 20000-30000 -n1);
   lsof -iTCP:$p -sTCP:LISTEN &>/dev/null || { echo $p; return 0; }; done; return 1; }
@@ -35,11 +39,15 @@ CUDA_VISIBLE_DEVICES=$GPU HF_HOME=${HF_HOME} PORT=$PA \
   A1_CKPT=${GAMMA_DATA}/runs/agent1_0p8b_final \
   A2_CKPT=${GAMMA_DATA}/runs/agent2_0p8b_final \
   WAM_HARNESS_OFF=$HOFF WAM_V19_GATES=1 \
-  WAM_TRACE=${GAMMA_DATA}/traces/wam_live_bank_0p8b_${ARM}19_${LANE}.jsonl \
+  WAM_TRACE=${GAMMA_DATA}/traces/wam_live_bank_0p8b_${ARM}19_${LANE}_s${SEED}.jsonl \
   nohup setsid $MSPY -u $P17/wam_agent_server.py > $L/agent_${NAME}.log 2>&1 & AG=$!
 
 cd $O
-CUDA_VISIBLE_DEVICES=$GPU nohup setsid .venv/bin/python3 scripts/serve_policy.py \
+# JAX preallocates ~75% of the GPU by default, which leaves no room for the
+# agent server when the node is shared (2026-09-11: agent server died with
+# CUBLAS_STATUS_ALLOC_FAILED on a busy gpu5). pi0.5 inference needs far less.
+CUDA_VISIBLE_DEVICES=$GPU XLA_PYTHON_CLIENT_MEM_FRACTION=${XLA_MEM_FRAC:-0.35} \
+  nohup setsid .venv/bin/python3 scripts/serve_policy.py \
   --seed=$SEED --port=$PP policy:checkpoint \
   --policy.dir=runs/ckpts/mme_vla_suite/symbolic_grounded_repro/$STEP \
   --policy.config=mme_vla_suite > $L/policy_${NAME}.log 2>&1 & SP=$!

@@ -1,0 +1,151 @@
+{
+ "concepts": [
+  [
+   "a small yellow box on the table",
+   "cookies",
+   [
+    "cookies",
+    "cookie"
+   ]
+  ],
+  [
+   "a red can",
+   "tomato_sauce",
+   [
+    "tomato"
+   ]
+  ],
+  [
+   "a small brown box",
+   "chocolate",
+   [
+    "chocolate",
+    "pudding"
+   ]
+  ],
+  [
+   "a small white box",
+   "butter",
+   [
+    "butter"
+   ]
+  ],
+  [
+   "a white box",
+   "cream",
+   [
+    "cream"
+   ]
+  ],
+  [
+   "an orange box",
+   "popcorn",
+   [
+    "popcorn"
+   ]
+  ],
+  [
+   "a white carton",
+   "milk",
+   [
+    "milk"
+   ]
+  ],
+  [
+   "a dark bottle",
+   "wine",
+   [
+    "wine"
+   ]
+  ],
+  [
+   "an orange juice bottle",
+   "orange_juice",
+   [
+    "orange"
+   ]
+  ],
+  [
+   "a wicker basket on the table",
+   "basket",
+   [
+    "basket"
+   ]
+  ],
+  [
+   "a chest of drawers",
+   "cabinet",
+   [
+    "drawer",
+    "cabinet"
+   ]
+  ],
+  [
+   "an open drawer of the cabinet",
+   "drawer_open",
+   [
+    "drawer"
+   ]
+  ],
+  [
+   "a small box inside the open drawer",
+   "drawer_content",
+   [
+    "drawer"
+   ]
+  ],
+  [
+   "a microwave",
+   "microwave",
+   [
+    "microwave"
+   ]
+  ],
+  [
+   "an open microwave with its door open",
+   "microwave_open",
+   [
+    "microwave"
+   ]
+  ],
+  [
+   "a black frying pan",
+   "frypan",
+   [
+    "frypan",
+    "pan"
+   ]
+  ],
+  [
+   "a mug on the table",
+   "mug",
+   [
+    "mug",
+    "cup"
+   ]
+  ],
+  [
+   "a dish rack",
+   "drainer",
+   [
+    "drainer"
+   ]
+  ],
+  [
+   "a white plate",
+   "plate",
+   [
+    "plate"
+   ]
+  ]
+ ],
+ "always": [
+  [
+   "robot arm",
+   "arm"
+  ]
+ ],
+ "thr": 0.05,
+ "topk": 3,
+ "note": "r6 (2026-09-13): phrases chosen by tune_prompts_rma.py against oracle-plan coordinates; small boxes remain weak (butter/cream/popcorn/milk ~0) -> harness evidence for pick/place comes from proprioception, detections feed the writer + receptacle/bottle checks"
+}

@@ -33,6 +33,18 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PLANS = {int(k): v for k, v in json.load(open(os.path.join(HERE, "rma_oracle_plans.json"))).items()}
+# 2026-09-14 RMA_PLAN_LABELS=<json {task_id: [label,...]}>: emit these strings as
+# the subgoal text instead of our plan instr (e.g. the authors' primitive_order
+# labels when serving their published VLA). Predicate binding still uses
+# `instr`; only the text sent to the policy changes. Lengths must match.
+_LABELS_PATH = os.environ.get("RMA_PLAN_LABELS", "")
+if _LABELS_PATH:
+    _LABELS = {int(k): v for k, v in json.load(open(_LABELS_PATH)).items()}
+    for _t, _steps in PLANS.items():
+        assert len(_LABELS[_t]) == len(_steps), f"task{_t}: {len(_LABELS[_t])} labels vs {len(_steps)} plan steps"
+        for _st, _lab in zip(_steps, _LABELS[_t]):
+            _st["label"] = str(_lab)
+    logging.getLogger(__name__).warning("RMA_PLAN_LABELS active: subgoal text from %s", _LABELS_PATH)
 _CAM = json.load(open(os.path.expandvars("${GAMMA_ROOT}/rma/rma_agentview_camera.json")))
 M = np.asarray(_CAM["matrix"], dtype=np.float64)
 HW = tuple(_CAM["hw"])
@@ -42,6 +54,35 @@ FIXED_LAYOUT_IQR = 3.0   # px; training IQR at or below this = object never move
 GRASP_OFFSET = {"butter_1": (1, 0), "chocolate_pudding_1": (3, -1), "cookies_1": (0, -2),
                 "cream_cheese_1": (-1, -2), "milk_1": (-2, -2), "popcorn_1": (6, 0),
                 "tomato_sauce_1": (3, 1), "wine_bottle_1": (6, 0), "orange_juice_1": (0, 0)}
+# 2026-09-14 RMA_ORACLE_GATE=1: advance at the COMPLETION conditions of the
+# training segmentation (measured on 5 eps x 26 tasks, seg_boundary_states.py):
+# place/put/close segments end with the gripper fully open (100%), pour
+# segments end after the wrist returned to the carry orientation (|drot| 0.01),
+# pick segments end with the fingers closed on the object. The benchmark's
+# scoring predicates fire mid-motion (object entering the region while still
+# grasped, tilt peak), so the ungated feed switches the prompt early.
+GATE_LEVEL = int(os.environ.get("RMA_ORACLE_GATE", "0") or 0)
+GATE = GATE_LEVEL >= 1
+# GATE level 2 additionally requires, for drawer/door "close" steps, that the
+# wrist has rotated back to the orientation it had before the matching "open"
+# (training close segments end with |drot| ~1.5 rad from their start, i.e.
+# the wrist returned; the open segment starts un-rotated).
+OPEN_Q = 0.037                    # finger q0 above this = open (harness convention)
+RETURN_TILT = np.deg2rad(10.0)    # pour: back within 10 deg of the pre-pour tilt
+GRASP_STEPS = 5                   # fingers stalled in the object band this long = grasp
+_WIDTH_KEYS = {"cookies_1": ["cookies"], "tomato_sauce_1": ["tomato sauce", "sauce"], "butter_1": ["butter"],
+               "popcorn_1": ["popcorn"], "cream_cheese_1": ["cream"], "chocolate_pudding_1": ["chocolate", "pudding"],
+               "milk_1": ["milk"], "wine_bottle_1": ["wine"], "orange_juice_1": ["orange"]}
+_WIDTHS = json.load(open(os.path.expandvars("${GAMMA_ROOT}/rma/grasp_widths.json"))) if GATE else {}
+
+
+def _band(obj: str):
+    ks = [k for k in _WIDTH_KEYS.get(obj, []) if k in _WIDTHS]
+    if not ks:
+        return None
+    return (min(_WIDTHS[k]["p10"] for k in ks) - 0.004, max(_WIDTHS[k]["p90"] for k in ks) + 0.004)
+
+
 _OBJ = [("chocolate pudding", "chocolate_pudding_1"), ("cream cheese", "cream_cheese_1"),
         ("tomato sauce", "tomato_sauce_1"), ("tomato_sauce", "tomato_sauce_1"),
         ("wine bottle", "wine_bottle_1"), ("orange_juice", "orange_juice_1"), ("cookies", "cookies_1"),
@@ -88,6 +129,10 @@ class SubgoalOracle:
         self.plan = []
         self.transitions = []
         self.episode = -1
+        self.q_hist = []
+        self.grasp_t = None
+        self.z_grasp = None
+        self.tilt_before_open = None
 
     # ---- env hooks ----
     def on_reset(self, env, obs):
@@ -158,13 +203,63 @@ class SubgoalOracle:
             self.seg_start = self.state["step_idx"]
             return
         self.t26._update_state(obs, self.state)
-        if self.idx < len(self.plan) and self.checks[self.idx](env, self.state, self.seg_start):
+        if self.idx >= len(self.plan):
+            return
+        fired = self.checks[self.idx](env, self.state, self.seg_start)
+        if GATE:
+            fired = self._gated(self.plan[self.idx], fired, obs)
+        if fired:
             done = self.plan[self.idx]["instr"]
             self.idx += 1
             self.seg_start = self.state["step_idx"]
+            self.q_hist = []
+            self.grasp_t = None
+            self.z_grasp = None
+            if self.idx < len(self.plan) and self.plan[self.idx]["instr"].split()[0] == "open":
+                _t = self.t26._segment_tilts(self.state, 0)
+                self.tilt_before_open = float(_t[-1]) if len(_t) else None
             nxt = self.plan[self.idx]["instr"] if self.idx < len(self.plan) else "(plan complete)"
             self.transitions.append((self.steps, done))
             logging.info(f"  [oracle t={self.steps}] completed '{done}' -> '{nxt}'")
+
+    # ---- completion gate (RMA_ORACLE_GATE=1) ----
+    def _gated(self, step, fired, obs):
+        q0 = z = None
+        if isinstance(obs, dict):
+            if obs.get("robot0_gripper_qpos") is not None:
+                q0 = float(np.asarray(obs["robot0_gripper_qpos"])[0])
+            if obs.get("robot0_eef_pos") is not None:
+                z = float(np.asarray(obs["robot0_eef_pos"])[2])
+        self.q_hist.append(q0)
+        ins, kind = step["instr"], step["kind"]
+        head = ins.split()[0]
+        if kind == "pick":
+            # proprioceptive alternative to the object-height rule: fingers
+            # stalled inside the object's grasp band, then the hand rises 3 cm
+            band = _band(step["obj"])
+            if band and q0 is not None and z is not None:
+                recent = [q for q in self.q_hist[-GRASP_STEPS:] if q is not None]
+                if (self.grasp_t is None and len(recent) == GRASP_STEPS
+                        and all(band[0] <= q <= band[1] for q in recent)
+                        and max(recent) - min(recent) < 0.001):
+                    self.grasp_t, self.z_grasp = self.steps, z
+                if self.grasp_t is not None and z - self.z_grasp >= 0.03:
+                    return True
+            return fired
+        if not fired:
+            return False
+        if head in ("place", "put", "close") or kind == "microwave_closed":
+            released = q0 is not None and q0 >= OPEN_Q
+            if GATE_LEVEL >= 2 and (head == "close" or kind == "microwave_closed") and self.tilt_before_open is not None:
+                tilts = self.t26._segment_tilts(self.state, 0)
+                if len(tilts) == 0:
+                    return False
+                return released and abs(float(tilts[-1]) - self.tilt_before_open) <= RETURN_TILT
+            return released
+        if head == "pour":
+            tilts = self.t26._segment_tilts(self.state, self.seg_start)
+            return len(tilts) >= 2 and abs(float(tilts[-1] - tilts[0])) <= RETURN_TILT
+        return fired
 
     # ---- predicates ----
     def _lift_check(self, obj):
@@ -193,7 +288,7 @@ class SubgoalOracle:
                 pr, pc = project_rc(pos)
                 dr, dc = GRASP_OFFSET.get(step["obj"], (0, 0))
                 r, c = int(np.clip(pr - dr, 0, HW[0] - 1)), int(np.clip(pc - dc, 0, HW[1] - 1))
-        return f"{step['instr']} at <{r}, {c}>"
+        return f"{step.get('label') or step['instr']} at <{r}, {c}>"
 
 
 ORACLE = SubgoalOracle()
