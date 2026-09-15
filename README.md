@@ -12,7 +12,7 @@ construction and at deployment alike.
 On the sixteen RoboMME memory tasks GAMMA reaches 66.0 % success with the
 policy held fixed (79 % of the privileged oracle ceiling, 84.1 %; 57.4 % with
 0.8B agents), and it transfers with its contracts unchanged to RoboMemArena
-(36.9 % task / 56.2 % subtask success with the full pipeline on held-out
+(38.8 % task / 59.0 % subtask success with the full pipeline on held-out
 layouts; 38.7 / 58.6 with the harness predicates alone). Trained weights are
 released upon acceptance, see [CHECKPOINTS.md](CHECKPOINTS.md).
 
@@ -60,7 +60,7 @@ measured on seeds 50–99 (disjoint from the demonstration seeds).
 | MemER, reported | 20.0 / 36.1 | 16.4 / 33.2 | 27.1 / 65.1 | 65.0 / 79.1 | 27.3 / 49.1 |
 | PrediMem (benchmark authors), reported | 22.5 / 45.2 | 27.3 / 38.4 | 45.7 / 69.3 | 72.5 / 89.5 | 38.5 / 55.2 |
 | π0.5 executor, plan fed on benchmark stage predicates (privileged, ours) | 3.5 / 23.6 | 2.4 / 40.7 | 11.4 / 36.5 | 35.0 / 68.1 | 10.0 / 41.1 |
-| **GAMMA (ours), full pipeline: writer + harness (10 ep.)** | 12.5 / 24.2 | 17.3 / 47.8 | 61.4 / 70.0 | 72.5 / 87.1 | **36.9 / 56.2** |
+| **GAMMA (ours), full pipeline: writer + harness (50 ep.)** | 27.4 / 37.6 | 19.2 / 50.1 | 52.3 / 67.5 | 80.7 / 90.3 | **38.8 / 59.0** |
 | GAMMA, harness predicates only, no writer (50 ep.) | 27.5 / 37.3 | 18.9 / 49.2 | 52.0 / 67.2 | 81.0 / 90.7 | 38.7 / 58.6 |
 | ground-truth subtask feed (privileged), reported | 32.5 / 54.8 | 33.6 / 49.8 | 51.4 / 75.6 | 85.0 / 92.3 | 46.1 / 64.8 |
 
