@@ -26,7 +26,7 @@ fi
 
 CFG="$1"; EXP="$2"; CKPT="$3"; SERVER_GPU="$4"; CLIENT_GPU="$5"
 
-MIGRATION_ROOT=/home/user/belief_vla_migration
+MIGRATION_ROOT=${MIGRATION_ROOT:-/path/to/workspace}   # see env.sh.example
 STACK_DIR="${MIGRATION_ROOT}/rma_eval_stack"
 TRAIN_REPO="${MIGRATION_ROOT}/robomme_policy_learning_official"
 BENCH="${MIGRATION_ROOT}/rma_eval_repo/evaluation_benchmark"

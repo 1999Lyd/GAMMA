@@ -13,7 +13,7 @@ On the sixteen RoboMME memory tasks GAMMA reaches 66.0 % success with the
 policy held fixed (79 % of the privileged oracle ceiling, 84.1 %; 57.4 % with
 0.8B agents), and it transfers with its contracts unchanged to RoboMemArena
 (38.7 % task / 58.6 % subtask success on held-out layouts). Trained weights are
-distributed separately, see [CHECKPOINTS.md](CHECKPOINTS.md).
+released upon acceptance, see [CHECKPOINTS.md](CHECKPOINTS.md).
 
 ```
 memory (frames) --> grounded symbolic subgoal --> action chunk
@@ -39,7 +39,7 @@ the numbers reported by [RoboMME](https://github.com/RoboMME/robomme_policy_lear
 | FrameSamp+Modul (best memory-VLA) | latent frame memory | 44.5 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
 | MemER-style keyframe pipeline | VLM keyframe selection | 42.4 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
 | GroundSG+QwenVL (single VLM) | raw frames | 32.7 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
-| **GAMMA (ours)** | verified grounded text + harness | **66.0** | [GAMMA_checkpoints.zip](CHECKPOINTS.md) — Drive link **TBD** |
+| **GAMMA (ours)** | verified grounded text + harness | **66.0** | [GAMMA_checkpoints.zip](CHECKPOINTS.md), released upon acceptance |
 | GAMMA (ours), 0.8B agents | same, Qwen3.5-0.8B agents | 57.4 | [GAMMA_checkpoints.zip](CHECKPOINTS.md) |
 | GroundSG+Oracle (privileged ceiling) | oracle subgoals | 84.1 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
 

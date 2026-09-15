@@ -7,7 +7,7 @@
 # Usage: bash scripts/launch_gate_train.sh <config> <exp_name> <gpus e.g. 2,3>
 set -eu
 CFG=${1:?config}; EXP=${2:?exp_name}; GPUS=${3:?gpus}
-R=/home/user/belief_vla_migration
+R=${MIGRATION_ROOT:-/path/to/workspace}
 # NVLINK ISLAND GUARD : the 8-GPU node's 8 H200s sit on TWO
 # NVLink domains, cards 0-3 and cards 4-7. A distributed job spanning both
 # falls back to PCIe -- much slower, and a suspected trigger of this node's
