@@ -92,8 +92,8 @@ Sources are labeled: [paper]=arXiv:2605.10921, [repo]=rma_eval_repo,
   prior bank lines, else demote to coordinate-free.
 
 ## F. Implementation plan — mapped 1:1 onto the v17 pipeline
-Pipeline provenance: the v17 scripts live in the 7f79c8b1 session
-scratchpad; step 0 copies them to a durable home.
+Pipeline provenance: the v17 scripts were developed in a working
+directory; step 0 copies them into the repository.
 0. cp -> ${GAMMA_ROOT}/serve/ : sam3_precompute.py,
    sam3_prompts.json(+round2), gen_wam_sft_v12.py, make_agent1_swift.py,
    make_agent2_swift.py, rollout_agent1.py, chain_rollout_v9.sh,

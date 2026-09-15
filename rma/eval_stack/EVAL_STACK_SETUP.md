@@ -63,7 +63,7 @@ export LIBERO_CONFIG_PATH=${GAMMA_ROOT}/rma/eval_stack/libero_config
 ### robosuite version
 
 `robosuite 1.5.2` (installed in `openpi_robocasa/.venv`, source at
-`belief_vla_migration/robosuite_src`) **cannot** run this fork: 1.5.x removed
+`<workspace>/robosuite_src`) **cannot** run this fork: 1.5.x removed
 `robosuite/environments/manipulation/single_arm_env.py`, and
 `libero_fork/libero/envs/bddl_base_domain.py` imports `SingleArmEnv` from it. Hence
 the pinned `robosuite==1.4.1` in this venv.

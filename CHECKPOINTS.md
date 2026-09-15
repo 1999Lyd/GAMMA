@@ -1,7 +1,9 @@
 # Checkpoints
 
 The trained weights are distributed separately from the code as one archive,
-`GAMMA_checkpoints.zip` (Google Drive link: **TBD — to be added by the authors**).
+`GAMMA_checkpoints.zip`. **The archive will be released publicly upon acceptance**;
+the anonymised submission contains the code only, and the numbers in the paper can be
+reproduced from the training scripts in this repository (`train/`, `rma/`) in the meantime.
 SHA-256 of the archive (11 GB): `c27cd5f2b13019c6582b0b8f249d27c987169fca24a4e235da5ad4450dc4555d`.
 
 Unpack it anywhere and point the environment variables at it (see `env.sh.example`):

@@ -3741,7 +3741,7 @@ index f1f8730..2c9188e 100644
 +            if self.foresight_gate_label:
 +                _emap2 = str(history_config.get(
 +                    "foresight_episode_map",
-+                    "/home/user/belief_vla_migration/robomme_setup/labels/lerobot_episode_map.json",
++                    "/path/to/workspace/robomme_setup/labels/lerobot_episode_map.json",
 +                ))
 +                with open(_emap2) as _f:
 +                    _blocks2 = json.load(_f)["blocks"]
@@ -3759,7 +3759,7 @@ index f1f8730..2c9188e 100644
 +            if self.foresight_unpred_mask:
 +                _emap = str(history_config.get(
 +                    "foresight_episode_map",
-+                    "/home/user/belief_vla_migration/robomme_setup/labels/lerobot_episode_map.json",
++                    "/path/to/workspace/robomme_setup/labels/lerobot_episode_map.json",
 +                ))
 +                with open(_emap) as f:
 +                    _blocks = json.load(f)["blocks"]
@@ -3785,7 +3785,7 @@ index f1f8730..2c9188e 100644
 +                ))
 +                emap_path = str(history_config.get(
 +                    "foresight_episode_map",
-+                    "/home/user/belief_vla_migration/robomme_setup/labels/"
++                    "/path/to/workspace/robomme_setup/labels/"
 +                    "lerobot_episode_map.json",
 +                ))
 +                vocab_path = str(history_config.get(
