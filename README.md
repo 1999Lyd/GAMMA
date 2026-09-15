@@ -12,7 +12,8 @@ construction and at deployment alike.
 On the sixteen RoboMME memory tasks GAMMA reaches 66.0 % success with the
 policy held fixed (79 % of the privileged oracle ceiling, 84.1 %; 57.4 % with
 0.8B agents), and it transfers with its contracts unchanged to RoboMemArena
-(38.7 % task / 58.6 % subtask success on held-out layouts). Trained weights are
+(36.9 % task / 56.2 % subtask success with the full pipeline on held-out
+layouts; 38.7 / 58.6 with the harness predicates alone). Trained weights are
 released upon acceptance, see [CHECKPOINTS.md](CHECKPOINTS.md).
 
 ```
@@ -46,7 +47,7 @@ the numbers reported by [RoboMME](https://github.com/RoboMME/robomme_policy_lear
 Harness ablation (one verdict disabled at a time): w/o DEFER 62.7, w/o REJECT 55.1,
 w/o CORRECT 65.0; no harness 51.2 (9B) and 32.3 (0.8B, vs 57.4 with it).
 
-### RoboMemArena (26 tasks, held-out layouts, 50 episodes per task)
+### RoboMemArena (26 tasks, held-out layouts)
 
 Task / subtask success (%), families as in the benchmark's Table 2. Baseline and
 privileged rows are the numbers reported by [RoboMemArena](https://github.com/OpenHelix-Team/RoboMemArena)
@@ -59,7 +60,8 @@ measured on seeds 50–99 (disjoint from the demonstration seeds).
 | MemER, reported | 20.0 / 36.1 | 16.4 / 33.2 | 27.1 / 65.1 | 65.0 / 79.1 | 27.3 / 49.1 |
 | PrediMem (benchmark authors), reported | 22.5 / 45.2 | 27.3 / 38.4 | 45.7 / 69.3 | 72.5 / 89.5 | 38.5 / 55.2 |
 | π0.5 executor, plan fed on benchmark stage predicates (privileged, ours) | 3.5 / 23.6 | 2.4 / 40.7 | 11.4 / 36.5 | 35.0 / 68.1 | 10.0 / 41.1 |
-| **GAMMA (ours)** | 27.5 / 37.3 | 18.9 / 49.2 | 52.0 / 67.2 | 81.0 / 90.7 | **38.7 / 58.6** |
+| **GAMMA (ours), full pipeline: writer + harness (10 ep.)** | 12.5 / 24.2 | 17.3 / 47.8 | 61.4 / 70.0 | 72.5 / 87.1 | **36.9 / 56.2** |
+| GAMMA, harness predicates only, no writer (50 ep.) | 27.5 / 37.3 | 18.9 / 49.2 | 52.0 / 67.2 | 81.0 / 90.7 | 38.7 / 58.6 |
 | ground-truth subtask feed (privileged), reported | 32.5 / 54.8 | 33.6 / 49.8 | 51.4 / 75.6 | 85.0 / 92.3 | 46.1 / 64.8 |
 
 <details>
@@ -350,10 +352,10 @@ Steps (all under `source env.sh`; the benchmark repo is expected at
 4. **Serving.** `rma/rma_agent_server.py` is the RMA agent server: `/reset` takes the
    instruction and the fixed per-task plan (`rma/eval_stack/rma_oracle_plans.json`),
    `/tick` takes three frames with their states and returns the current subtask after
-   the harness. Switches: `WAM_A1_OFF=1` (harness-only: progress claims raised by the
-   predicates and admitted after `AUTO_GRACE=2` ticks; the paper's reported
-   configuration), `A1_CKPT`/`WAM_BASE` (writer-driven variant; `WAM_SETTLE_TICKS`
-   applies the same two-tick settle rule to writer claims), `WAM_HARNESS_OFF=1`,
+   the harness. Switches: `A1_CKPT`/`WAM_BASE` with `WAM_SETTLE_TICKS=2` (the paper's
+   reported configuration: the writer runs and its verified claims are admitted once
+   the predicate has held two ticks), `WAM_A1_OFF=1` (harness-only ablation: progress
+   claims raised by the predicates and admitted after `AUTO_GRACE=2` ticks), `WAM_HARNESS_OFF=1`,
    `WAM_SAM_OFF=1`, `WAM_VERIFY_VISION`, `REFUTE_TICKS`, `DET_THR`, `WAM_TRACE`.
 5. **Closed-loop evaluation** (`rma/eval_stack/`, protocol: seeds 50–99, 50
    episodes per task, 10 actions per policy call, 2,500 steps):
