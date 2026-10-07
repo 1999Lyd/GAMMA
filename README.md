@@ -13,8 +13,8 @@ On the sixteen RoboMME memory tasks GAMMA reaches 66.0 % success with the
 policy held fixed (79 % of the privileged oracle ceiling, 84.1 %; 57.4 % with
 0.8B agents), and it transfers with its contracts unchanged to RoboMemArena
 (38.8 % task / 59.0 % subtask success with the full pipeline on held-out
-layouts; 38.7 / 58.6 with the harness predicates alone). Trained weights are
-released upon acceptance, see [CHECKPOINTS.md](CHECKPOINTS.md).
+layouts; 38.7 / 58.6 with the harness predicates alone). Trained weights are on
+[Google Drive](https://drive.google.com/drive/folders/15UWryg_Q7E0GqcG85X8RqZprk1iSMMhq), see [CHECKPOINTS.md](CHECKPOINTS.md).
 
 ```
 memory (frames) --> grounded symbolic subgoal --> action chunk
@@ -40,8 +40,8 @@ the numbers reported by [RoboMME](https://github.com/RoboMME/robomme_policy_lear
 | FrameSamp+Modul (best memory-VLA) | latent frame memory | 44.5 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
 | MemER-style keyframe pipeline | VLM keyframe selection | 42.4 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
 | GroundSG+QwenVL (single VLM) | raw frames | 32.7 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
-| **GAMMA (ours)** | verified grounded text + harness | **66.0** | [GAMMA_checkpoints.zip](CHECKPOINTS.md), released upon acceptance |
-| GAMMA (ours), 0.8B agents | same, Qwen3.5-0.8B agents | 57.4 | [GAMMA_checkpoints.zip](CHECKPOINTS.md) |
+| **GAMMA (ours)** | verified grounded text + harness | **66.0** | [GAMMA_checkpoints.zip](https://drive.google.com/drive/folders/15UWryg_Q7E0GqcG85X8RqZprk1iSMMhq) |
+| GAMMA (ours), 0.8B agents | same, Qwen3.5-0.8B agents | 57.4 | [GAMMA_checkpoints.zip](https://drive.google.com/drive/folders/15UWryg_Q7E0GqcG85X8RqZprk1iSMMhq) |
 | GroundSG+Oracle (privileged ceiling) | oracle subgoals | 84.1 | [RoboMME](https://github.com/RoboMME/robomme_policy_learning) |
 
 Harness ablation (one verdict disabled at a time): w/o DEFER 62.7, w/o REJECT 55.1,

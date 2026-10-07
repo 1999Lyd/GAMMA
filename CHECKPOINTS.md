@@ -1,12 +1,18 @@
 # Checkpoints
 
-The trained weights are distributed separately from the code as one archive,
-`GAMMA_checkpoints.zip`. **The archive will be released publicly upon acceptance**;
-the anonymised submission contains the code only, and the numbers in the paper can be
-reproduced from the training scripts in this repository (`train/`, `rma/`) in the meantime.
-SHA-256 of the archive (11 GB): `c27cd5f2b13019c6582b0b8f249d27c987169fca24a4e235da5ad4450dc4555d`.
+The trained weights are distributed separately from the code as two archives in the
+Google Drive folder https://drive.google.com/drive/folders/15UWryg_Q7E0GqcG85X8RqZprk1iSMMhq:
 
-Unpack it anywhere and point the environment variables at it (see `env.sh.example`):
+| archive | contents | size | SHA-256 |
+|---|---|---|---|
+| `GAMMA_checkpoints.zip` | RoboMME writer and reasoner adapters (9B and 0.8B) and the RoboMME executor | 11.7 GB | `c27cd5f2b13019c6582b0b8f249d27c987169fca24a4e235da5ad4450dc4555d` |
+| `GAMMA_checkpoints_rma.zip` | RoboMemArena writer adapter and executor | 11.7 GB | `01364694a64dcac1ee2ce5c754e782c8fadc9ff0931bb28d722b1d0c97222f15` |
+
+Both archives unpack into the same `GAMMA_checkpoints/` tree; the RoboMME results need only
+the first. The folder can be fetched from the command line with
+`pip install gdown && gdown --folder https://drive.google.com/drive/folders/15UWryg_Q7E0GqcG85X8RqZprk1iSMMhq`.
+
+Unpack them anywhere and point the environment variables at it (see `env.sh.example`):
 
 ```
 GAMMA_checkpoints/
@@ -34,4 +40,4 @@ does when `A1_CKPT` / `A2_CKPT` point at them.
 Base models and the detector are public and are downloaded on first use:
 `Qwen/Qwen3.5-9B`, `Qwen/Qwen3.5-0.8B`, `facebook/sam3` (SAM-3 via `transformers`).
 
-Sizes: adapters 228 MB total; policy 11 GB.
+Sizes: adapters 412 MB in total; each executor 11 GB.
